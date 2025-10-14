@@ -1,45 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-<title>Spades Diagnostic — iPhone Test</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a5a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠️</text></svg>">
+<title>Spades — Playable Test (iPhone Ready)</title>
 <style>
-  html,body{margin:0;padding:0;height:100%;background:#0a5a2b;color:#fff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-  button{font-size:1.2rem;padding:12px 20px;border:none;border-radius:12px;background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff;font-weight:700;margin:10px;cursor:pointer}
-  #log{margin-top:20px;text-align:left;width:90%;max-width:600px;background:#1119;padding:10px;border-radius:10px;overflow:auto;max-height:40vh;font-family:monospace;font-size:.9rem}
+  :root{--felt:#0a5a2b;--felt2:#086b33;--ink:#0b1220;--paper:#0a5a2b;--ns:#22c55e;--ns-ink:#052e17;--ew:#ec4899;--ew-ink:#3a0b1f;--glow:#00e1ff;--vh:1vh}
+  html,body{height:calc(var(--vh)*100);margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--paper);color:#f7fafc;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;overflow:hidden}
+  .hidden{display:none!important}
+
+  #error{position:fixed;left:0;right:0;top:0;background:#b91c1c;color:#fff;padding:.5rem 1rem;font-weight:700;display:none;z-index:10000}
+
+  /* Rotate hint for portrait */
+  #rotateHint{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0008;color:#fff;z-index:1000;text-align:center;padding:20px}
+  #rotateBox{background:#111a;padding:16px 20px;border-radius:14px;font-weight:700}
+
+  /* Welcome */
+  #welcome{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f2027 0%,#203a43 55%,#2c5364 100%);padding:2rem;box-sizing:border-box}
+  #welcome .hero{width:100%;max-width:480px;padding:24px;border-radius:20px;background:linear-gradient(135deg,#fff 0%,#f0f9ff 35%,#fef3ff 65%,#f0fff4 100%);box-shadow:0 12px 40px rgba(14,18,40,.18);text-align:center;color:#0b1220}
+  .title{font-size:1.9rem;margin:0;background:linear-gradient(90deg,#0ea5e9,#8b5cf6,#ef4444,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .form{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+  .form input,.form select{padding:10px 12px;border-radius:12px;border:1px solid #cbd5e1;outline:none;width:100%}
+  .btn{display:inline-block;margin:6px;padding:12px 20px;border-radius:18px;border:none;cursor:pointer;font-weight:800;font-size:1rem}
+  .btn-primary{background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff}
+  .btn-secondary{background:#e2e8f0;color:#111}
+
+  /* Table */
+  #table{position:fixed;inset:0;background:radial-gradient(1200px 700px at 50% 55%,var(--felt2),var(--felt));display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px;touch-action:none}
+  #scoreboard{position:absolute;top:1%;left:2%;display:flex;flex-direction:column;gap:4px;z-index:7;font-size:clamp(.7rem,2vw,1rem)}
+  .score{padding:6px 10px;border-radius:14px;font-weight:800}
+  .ns{background:var(--ns);color:var(--ns-ink)} .ew{background:var(--ew);color:var(--ew-ink)}
+  #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.9);color:#0b1220;font-weight:800;z-index:6;text-align:center;font-size:clamp(.7rem,2vw,1rem)}
+  #timer{position:absolute;top:1%;right:2%;padding:4px 10px;border-radius:16px;background:#fff;color:#0b1220;font-weight:800;display:none}
+
+  /* Players */
+  #player-panel{position:absolute;inset:0;z-index:5;pointer-events:none}
+  .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.18);border-radius:10px;padding:6px 8px;min-width:80px;font-size:clamp(.7rem,2vw,1rem)}
+  .p.active{box-shadow:0 0 10px 2px var(--glow)}
+  .av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;background:#fff;object-fit:cover}
+  .south{left:50%;bottom:20%;transform:translateX(-50%)}
+  .north{left:50%;top:5%;transform:translateX(-50%)}
+  .east{right:4%;top:50%;transform:translateY(-50%)}
+  .west{left:4%;top:50%;transform:translateY(-50%)}
+  .ring-ns{box-shadow:0 0 0 2px rgba(34,197,94,.9)} .ring-ew{box-shadow:0 0 0 2px rgba(236,72,153,.9)}
+
+  /* Trick slots */
+  .slot{position:absolute;width:10vw;max-width:60px;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;z-index:4}
+  .slot.south{left:50%;bottom:32%;transform:translateX(-50%)}
+  .slot.north{left:50%;top:20%;transform:translateX(-50%)}
+  .slot.east{right:20%;top:50%;transform:translateY(-50%)}
+  .slot.west{left:20%;top:50%;transform:translateY(-50%)}
+
+  /* Hand */
+  #hand{position:absolute;left:50%;bottom:2%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:1}
+  .card{width:12vw;max-width:58px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease}
+  .card.legal{filter:drop-shadow(0 0 1px #00e1ff);outline:2px solid #00e1ff;border-radius:8px}
+  .card.legal:active,.card.legal:hover{transform:translateY(-4px)}
+
+  /* Piles */
+  .pile{position:absolute;width:24px;height:120px;display:flex;flex-direction:column;gap:2px}
+  #pile-south{left:6%;bottom:6%} #pile-east{right:6%;bottom:6%}
+  .mini{width:20px;height:26px;border-radius:4px;background:linear-gradient(180deg,#e2e8f0,#cbd5e1);box-shadow:0 2px 4px rgba(0,0,0,.25)}
+
+  /* Overlay */
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:10;text-align:center;padding:1rem}
+  .win{display:flex;flex-direction:column;gap:10px;align-items:center;background:linear-gradient(90deg,#22c55e22,#a855f722);border:1px solid #e2e8f0;padding:10px 14px;border-radius:14px}
 </style>
 </head>
 <body>
-<h1>♠️ Spades Diagnostic</h1>
-<p>This test checks if Safari/iPhone can handle touch events and JS startup.</p>
-<button id="classic">Start Classic Mode</button>
-<button id="timed">Start Timed Mode</button>
-<div id="status">Waiting for tap...</div>
-<pre id="log"></pre>
+<div id="error"></div>
+<div id="rotateHint"><div id="rotateBox">Rotate to <b>landscape</b> for best play.</div></div>
+
+<section id="welcome">
+  <div class="hero">
+    <h1 class="title">♠️ Spades — Playable Test</h1>
+    <p>JJDD rules · offline · iPhone-ready</p>
+    <div class="form" role="group" aria-label="Player setup">
+      <label for="playerName">Player Name
+        <input id="playerName" type="text" placeholder="You" aria-label="Enter player name">
+      </label>
+      <label for="difficulty">Difficulty
+        <select id="difficulty" aria-label="Choose difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </label>
+    </div>
+    <button id="classicBtn" class="btn btn-primary">Classic Mode</button>
+    <button id="timedBtn" class="btn btn-secondary">60-Second Mode</button>
+    <p style="font-size:.85rem;opacity:.8;margin-top:.5rem">Use “Add to Home Screen” for chrome-less fullscreen on iPhone.</p>
+  </div>
+</section>
+
+<section id="table" class="hidden" aria-live="polite">
+  <div id="board">
+    <div id="scoreboard">
+      <div id="scoreNS" class="score ns">NS · Bid — · Tricks 0</div>
+      <div id="scoreEW" class="score ew">EW · Bid — · Tricks 0</div>
+    </div>
+    <div id="timer" role="timer"></div>
+    <div id="status"></div>
+
+    <div id="player-panel">
+      <div id="ps" class="p south">
+        <img id="avs" class="av ring-ns" alt="You">
+        <div><b>You</b></div><small id="meta-s">Bid —</small>
+      </div>
+      <div id="pe" class="p east">
+        <img id="ave" class="av ring-ew" alt="East (AI)">
+        <div><b>East (AI)</b></div><small id="meta-e">Bid —</small>
+      </div>
+      <div id="pn" class="p north">
+        <img id="avn" class="av ring-ns" alt="North (AI)">
+        <div><b>North (AI)</b></div><small id="meta-n">Bid —</small>
+      </div>
+      <div id="pw" class="p west">
+        <img id="avw" class="av ring-ew" alt="West (AI)">
+        <div><b>West (AI)</b></div><small id="meta-w">Bid —</small>
+      </div>
+    </div>
+
+    <!-- Trick slots -->
+    <div id="ts" class="slot south" aria-label="South's play"></div>
+    <div id="te" class="slot east" aria-label="East's play"></div>
+    <div id="tn" class="slot north" aria-label="North's play"></div>
+    <div id="tw" class="slot west" aria-label="West's play"></div>
+
+    <div id="hand"></div>
+    <!-- One keeper per team -->
+    <div id="pile-south" class="pile" aria-label="NS Tricks"></div>
+    <div id="pile-east" class="pile" aria-label="EW Tricks"></div>
+  </div>
+  <div id="overlay"></div>
+</section>
+
 <script>
-const logEl=document.getElementById('log');
-function log(msg){ logEl.textContent += msg+"\n"; console.log(msg); }
-function startGame(mode){
-  document.body.style.background="#086b33";
-  document.getElementById('status').textContent="Game started in "+mode+" mode!";
-  log("✅ startGame("+mode+") triggered at "+new Date().toLocaleTimeString());
-  try{
-    // create a test deck
-    const suits=['♠','♣','♦','♥'];
-    const deck=[]; for(let s of suits){ for(let r=2;r<=14;r++){ deck.push({suit:s,rank:r}); } }
-    log("Deck size: "+deck.length);
-    // simulate dealing
-    const hands=[[],[],[],[]];
-    for(let i=0;i<52;i++) hands[i%4].push(deck[i]);
-    log("Hands: "+hands.map(h=>h.length).join(','));
-    document.getElementById('status').textContent += " | Cards dealt successfully.";
-  }catch(e){ log("❌ Error: "+e.message); document.getElementById('status').textContent="Error: "+e.message; }
+// ===== Basic utilities & iPhone layout helpers =====
+const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+function setVh(){ document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px'); }
+setVh(); addEventListener('resize', setVh);
+function showErr(msg){ const e=document.getElementById('error'); e.textContent=msg; e.style.display='block'; console.error(msg); }
+function updateRotateHint(){ const portrait = window.matchMedia('(orientation: portrait)').matches; document.getElementById('rotateHint').style.display = portrait? 'flex':'none'; }
+updateRotateHint(); addEventListener('orientationchange', updateRotateHint);
+
+// ===== Offline avatars (inline) =====
+function avatarDataURL(label, ring) {
+  const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop offset='0' stop-color='#fefefe'/><stop offset='1' stop-color='#e8eef6'/></linearGradient></defs><circle cx='40' cy='40' r='38' fill='url(#g)' stroke='${ring}' stroke-width='4'/><circle cx='40' cy='30' r='14' fill='#9ec3ff'/><rect x='18' y='46' rx='12' ry='12' width='44' height='22' fill='#85e3c1'/><text x='40' y='74' font-size='16' font-weight='700' text-anchor='middle' fill='#111'>${label}</text></svg>`);
+  return 'data:image/svg+xml;utf8,' + svg;
 }
-document.getElementById('classic').addEventListener('click',()=>startGame('classic'));
-document.getElementById('timed').addEventListener('click',()=>startGame('timed'));
-window.onerror=function(m,s,l,c,e){log("❌ Global error: "+m+" at "+l);}
-log("JS loaded OK.");
+
+// ===== Cards & rendering =====
+function suitColor(s){ return s==='♥'||s==='♦' ? '#e53e3e' : '#1f2937'; }
+function createCardSVG(card){
+  const svgNS='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(svgNS,'svg'); svg.setAttribute('viewBox','0 0 60 90'); svg.setAttribute('class','card');
+  const defs=document.createElementNS(svgNS,'defs'); const lg=document.createElementNS(svgNS,'linearGradient');
+  const gid='g'+Math.random().toString(36).slice(2,8); lg.setAttribute('id',gid); lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','0'); lg.setAttribute('y2','1');
+  const s1=document.createElementNS(svgNS,'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#ffffff');
+  const s2=document.createElementNS(svgNS,'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#f3f6fb');
+  lg.appendChild(s1); lg.appendChild(s2); defs.appendChild(lg); svg.appendChild(defs);
+  const rect=document.createElementNS(svgNS,'rect'); rect.setAttribute('width','60'); rect.setAttribute('height','90'); rect.setAttribute('rx','10'); rect.setAttribute('fill',`url(#${gid})`); rect.setAttribute('stroke','#b7c0cc'); rect.setAttribute('stroke-width','2'); svg.appendChild(rect);
+  const top=document.createElementNS(svgNS,'text'); const bot=document.createElementNS(svgNS,'text'); const sb=document.createElementNS(svgNS,'text'); const sb2=document.createElementNS(svgNS,'text');
+  const isJ = card.suit==='JOKER'; const col = isJ? '#111827' : suitColor(card.suit);
+  const topLab=isJ?(card.rank==='BJ'?'BJ':'LJ'):card.rank; const sym=isJ?'🃏':card.suit;
+  top.setAttribute('x','10'); top.setAttribute('y','23'); top.setAttribute('font-size','17'); top.setAttribute('font-weight','bold'); top.setAttribute('fill',col); top.textContent=topLab;
+  bot.setAttribute('x','44'); bot.setAttribute('y','85'); bot.setAttribute('font-size','16'); bot.setAttribute('font-weight','bold'); bot.setAttribute('opacity','0.7'); bot.setAttribute('text-anchor','end'); bot.setAttribute('fill',col); bot.textContent=topLab;
+  sb.setAttribute('x','10'); sb.setAttribute('y','45'); sb.setAttribute('font-size','22'); sb.setAttribute('fill',col); sb.textContent=sym;
+  sb2.setAttribute('x','48'); sb2.setAttribute('y','75'); sb2.setAttribute('font-size','20'); sb2.setAttribute('opacity','0.7'); sb2.setAttribute('text-anchor','end'); sb2.setAttribute('fill',col); sb2.textContent=sym;
+  svg.append(top,bot,sb,sb2); return svg;
+}
+
+// ===== Game state =====
+const suits=['♠','♣','♦','♥'];
+const ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const players=[]; let current=0, leadSuit=null, trick=[], spadesBroken=false; let mode='classic', difficulty='normal';
+const scoreNS={bid:0,tricks:0,score:0,bags:0}, scoreEW={bid:0,tricks:0,score:0,bags:0};
+let timerId=null; let timeLeft=0;
+
+// ===== UI refs =====
+const wel=document.getElementById('welcome'); const tbl=document.getElementById('table');
+const classicBtn=document.getElementById('classicBtn'); const timedBtn=document.getElementById('timedBtn');
+const handEl=document.getElementById('hand'); const statusEl=document.getElementById('status');
+const nsEl=document.getElementById('scoreNS'); const ewEl=document.getElementById('scoreEW');
+const metaS=document.getElementById('meta-s'), metaE=document.getElementById('meta-e'), metaN=document.getElementById('meta-n'), metaW=document.getElementById('meta-w');
+const slots={0:document.getElementById('ts'),1:document.getElementById('te'),2:document.getElementById('tn'),3:document.getElementById('tw')};
+const avS=document.getElementById('avs'), avE=document.getElementById('ave'), avN=document.getElementById('avn'), avW=document.getElementById('avw');
+const overlay=document.getElementById('overlay');
+const nameInput=document.getElementById('playerName'); const diffSelect=document.getElementById('difficulty');
+
+// avatars
+avS.src=avatarDataURL('You','#22c55e'); avN.src=avatarDataURL('N','#22c55e'); avE.src=avatarDataURL('E','#ec4899'); avW.src=avatarDataURL('W','#ec4899');
+
+// ===== JJDD logic =====
+const isJoker=c=>c.suit==='JOKER';
+const isTrump=c=> isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
+function trumpPower(c){
+  if(isJoker(c)) return c.rank==='BJ'?100:99;
+  if(c.suit==='♦' && c.rank==='2') return 98;
+  if(c.suit==='♠'){ if(c.rank==='2') return 97; return 50 + ranks.indexOf(c.rank); }
+  return -1;
+}
+const cardVal=c=>ranks.indexOf(c.rank);
+function effectiveSuit(c){ if(isJoker(c)) return null; if(c.suit==='♦' && c.rank==='2') return '♠'; return c.suit; }
+
+function buildDeck(){
+  const d=[]; for(const s of suits){ for(const r of ranks){ d.push({suit:s,rank:r}); } }
+  for(const s of ['♣','♥']){ const i=d.findIndex(c=>c.suit===s&&c.rank==='2'); if(i>-1) d.splice(i,1); }
+  d.push({suit:'JOKER',rank:'BJ'}); d.push({suit:'JOKER',rank:'LJ'}); return d;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function estimateBid(hand){
+  let b=0; for(const c of hand){
+    if(isJoker(c)) b+=1.5;
+    else if(c.suit==='♠'){ const ri=ranks.indexOf(c.rank); b += (c.rank==='2')?1.2: (ri>=10?1:(ri>=8?0.7:0.3)); }
+    else if(c.suit==='♦'&&c.rank==='2'){ b+=1.1; }
+    else { if(ranks.indexOf(c.rank)>=10) b+=0.5; }
+  }
+  return Math.max(1, Math.round(b));
+}
+
+function deal(){
+  const deck=shuffle(buildDeck());
+  for(let i=0;i<4;i++) players[i]={hand:[],tricks:0,bid:0};
+  for(let i=0;i<52;i++) players[i%4].hand.push(deck[i]);
+  for(const p of players){
+    p.hand.sort((a,b)=> (a.suit==='JOKER'?99:suits.indexOf(a.suit)) - (b.suit==='JOKER'?99:suits.indexOf(b.suit)) || ranks.indexOf(a.rank)-ranks.indexOf(b.rank));
+    p.bid=estimateBid(p.hand);
+  }
+  scoreNS.bid=players[0].bid+players[2].bid; scoreEW.bid=players[1].bid+players[3].bid;
+  metaS.textContent=`Bid ${players[0].bid}`; metaE.textContent=`Bid ${players[1].bid}`; metaN.textContent=`Bid ${players[2].bid}`; metaW.textContent=`Bid ${players[3].bid}`;
+}
+
+function firstPlayer(){ for(const r of ['2','3','4']){ for(let i=0;i<4;i++){ if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r)) return i; } } return 0; }
+
+function renderScores(){ nsEl.textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks}`; ewEl.textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks}`; }
+function renderActive(){ document.querySelectorAll('.p').forEach((el,i)=> el.classList.toggle('active', i===current)); }
+function svgCard(card){ return createCardSVG(card); }
+
+function showHand(){
+  handEl.innerHTML=''; const h=players[0].hand; const legal=legalMoves(h);
+  h.forEach((c,idx)=>{
+    const el=svgCard(c);
+    if(legal.includes(idx)) el.classList.add('legal');
+    el.addEventListener('click', ()=>{
+      if(current!==0) return;
+      if(!legal.includes(idx)){ alert(`Must follow ${leadSuit||'non-trump'}`); return;}
+      play(0,idx);
+    });
+    el.addEventListener('touchstart', (e)=>{ e.preventDefault(); el.click(); }, {passive:false});
+    handEl.appendChild(el);
+  });
+}
+
+function legalMoves(hand){
+  if(current!==0) return [];
+  if(!leadSuit){
+    const onlyTr=hand.every(isTrump);
+    return hand.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);
+  }
+  const hasSuit=hand.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
+  return hand.map((c,i)=> (!hasSuit||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
+}
+
+function cmp(a,b,lead){
+  const at=isTrump(a), bt=isTrump(b);
+  if(at||bt){ return (at?trumpPower(a):-1)-(bt?trumpPower(b):-1); }
+  const as=effectiveSuit(a), bs=effectiveSuit(b);
+  if(as===bs) return cardVal(a)-cardVal(b);
+  if(as===lead) return 1; if(bs===lead) return -1; return 0;
+}
+
+function updateTrick(){ Object.values(slots).forEach(s=>s.innerHTML=''); trick.forEach(p=> slots[p.player].appendChild(svgCard(p.card))); }
+
+function addBookForWinner(idx){
+  const pile = (idx%2===0)? document.getElementById('pile-south') : document.getElementById('pile-east');
+  const d=document.createElement('div'); d.className='mini'; d.style.marginTop=pile.children.length?'-10px':'0'; pile.appendChild(d);
+}
+
+function play(pi, hi){
+  const card=players[pi].hand.splice(hi,1)[0];
+  trick.push({player:pi,card});
+  if(!leadSuit) { leadSuit=isJoker(card)?null:effectiveSuit(card); if(isTrump(card)) spadesBroken=true; }
+  else if(isTrump(card)) spadesBroken=true;
+  updateTrick();
+  current=(current+1)%4; renderActive(); showHand(); status();
+  if(trick.length<4){ if(current!==0) setTimeout(ai,350); } else { setTimeout(resolve,560); }
+}
+
+function ai(){
+  const p=current, h=players[p].hand;
+  let legal;
+  if(!leadSuit){
+    const onlyTr=h.every(isTrump);
+    legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);
+  } else {
+    const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
+    legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
+  }
+  if(!legal.length) legal=h.map((_,i)=>i);
+  const wins=legal.filter(i=>{
+    const t={player:p,card:h[i]}; let w=trick[0]||t; const seq=(trick.length?trick.concat([t]):[t]);
+    for(const pl of seq){ if(cmp(pl.card,w.card,leadSuit)>0) w=pl; } return w.player===p;
+  });
+  const pick=wins.length? wins.sort((i,j)=>trumpPower(h[i])-trumpPower(h[j]))[0] : legal.sort((i,j)=>cardVal(h[i])-cardVal(h[j]))[0];
+  play(p,pick);
+}
+
+function resolve(){
+  let win=trick[0];
+  for(const p of trick.slice(1)){ if(cmp(p.card, win.card, leadSuit)>0) win=p; }
+  const w=win.player;
+  addBookForWinner(w);
+  players[w].tricks++;
+  if(w%2===0) scoreNS.tricks++; else scoreEW.tricks++;
+  leadSuit=null; trick=[]; current=w;
+  renderScores(); updateTrick(); renderActive(); status();
+  if(players[0].hand.length===0) endHand();
+  else { if(current!==0) setTimeout(ai,650); showHand(); }
+}
+
+function scoreHand(){
+  const nsMade = scoreNS.tricks >= scoreNS.bid; const ewMade = scoreEW.tricks >= scoreEW.bid;
+  let nsGain = nsMade ? scoreNS.bid*10 + (scoreNS.tricks-scoreNS.bid) : -scoreNS.bid*10;
+  let ewGain = ewMade ? scoreEW.bid*10 + (scoreEW.tricks-scoreEW.bid) : -scoreEW.bid*10;
+  if(nsMade) { scoreNS.bags = (scoreNS.bags + (scoreNS.tricks-scoreNS.bid))%10; if(scoreNS.bags===0 && (scoreNS.tricks-scoreNS.bid)>0) nsGain -= 10; }
+  if(ewMade) { scoreEW.bags = (scoreEW.bags + (scoreEW.tricks-scoreEW.bid))%10; if(scoreEW.bags===0 && (scoreEW.tricks-scoreEW.bid)>0) ewGain -= 10; }
+  scoreNS.score += nsGain; scoreEW.score += ewGain;
+  return {nsGain,ewGain};
+}
+
+function endHand(reason){
+  stopTimer();
+  const ns=scoreNS.tricks, ew=scoreEW.tricks;
+  const result = ns>ew?`NS wins this hand (${ns}–${ew})`: (ew>ns?`EW wins this hand (${ew}–${ns})`:`It's a tie (${ns}–${ew})`);
+  const {nsGain,ewGain}=scoreHand();
+  overlay.innerHTML=`<div class="win">${reason?`⏱️ ${reason} — `:''}👑 <b>${result}</b></div>
+  <div style="opacity:.9">Scoring: NS ${nsGain>=0?'+':''}${nsGain}, EW ${ewGain>=0?'+':''}${ewGain} · Totals — NS ${scoreNS.score}, EW ${scoreEW.score}</div>
+  <div><button id="next" class="btn btn-primary">Deal Next Hand</button> <button id="home" class="btn btn-secondary">Main Menu</button></div>`;
+  overlay.style.display='flex';
+  document.getElementById('next').onclick=()=>{ overlay.style.display='none'; startGame(mode); };
+  document.getElementById('home').onclick=()=>{ overlay.style.display='none'; goHome(); };
+}
+
+function status(){
+  const text = (current===0? 'Your turn' : ['South','East','North','West'][current]+ ' to play') + ' · ' + (leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));
+  statusEl.textContent=text;
+}
+
+function render(){ renderScores(); renderActive(); updateTrick(); showHand(); status(); }
+function goHome(){ tbl.classList.add('hidden'); wel.classList.remove('hidden'); stopTimer(); }
+
+function startGame(m){
+  try{
+    mode=m;
+    document.getElementById('pile-south').innerHTML=''; document.getElementById('pile-east').innerHTML='';
+    scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
+    deal(); current=firstPlayer();
+    const pname=(nameInput?.value||'').trim()||'You';
+    try{ document.querySelector('#ps b').textContent=pname; }catch{}
+    try{ difficulty=(diffSelect?.value)||'normal'; }catch{}
+    wel.classList.add('hidden'); tbl.classList.remove('hidden');
+    render();
+    if(current!==0) setTimeout(ai,600);
+    if(mode==='timed') startTimer(60); else stopTimer();
+    console.log('Game started:', m);
+  }catch(err){ showErr('Startup error: '+(err.message||err)); }
+}
+
+// Timer
+function startTimer(seconds){
+  timeLeft=seconds; const timerEl=document.getElementById('timer');
+  timerEl.style.display='block'; timerEl.textContent=`${timeLeft}s`; clearInterval(timerId);
+  timerId=setInterval(()=>{ timeLeft--; timerEl.textContent=`${timeLeft}s`; if(timeLeft<=0){ clearInterval(timerId); timerEl.textContent='0s'; endHand('Time up'); } },1000);
+}
+function stopTimer(){ clearInterval(timerId); const timerEl=document.getElementById('timer'); timerEl.style.display='none'; }
+
+// Buttons — always start the game on tap (no fullscreen dependency)
+classicBtn.addEventListener('click', ()=>{ startGame('classic'); }, {passive:true});
+timedBtn.addEventListener('click', ()=>{ startGame('timed'); }, {passive:true});
+
+// Prevent scroll bounce on iOS
+document.addEventListener('touchmove', function(e){ if(!e.target.closest('#hand,.card')) e.preventDefault(); }, {passive:false});
 </script>
 </body>
 </html>
