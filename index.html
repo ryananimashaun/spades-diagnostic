@@ -30,7 +30,8 @@
   .ns{background:var(--ns);color:var(--ns-ink)} .ew{background:var(--ew);color:var(--ew-ink)}
   #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.9);color:#0b1220;font-weight:800;z-index:6;text-align:center;font-size:clamp(.7rem,2vw,1rem)}
   #timer{position:absolute;top:1%;right:2%;padding:4px 10px;border-radius:16px;background:#fff;color:#0b1220;font-weight:800;display:none}
-  #player-panel{position:absolute;inset:0;z-index:5;pointer-events:none}
+  /* UPDATED: keep avatars above cards */
+  #player-panel{position:absolute; inset:0; z-index:100; pointer-events:none}
   .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.18);border-radius:10px;padding:6px 8px;min-width:80px;font-size:clamp(.7rem,2vw,1rem)}
   .p.active{box-shadow:0 0 10px 2px var(--glow)}
   .av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;background:#fff;object-fit:cover}
@@ -44,8 +45,10 @@
   .slot.north{left:50%;top:20%;transform:translateX(-50%)}
   .slot.east{right:20%;top:50%;transform:translateY(-50%)}
   .slot.west{left:20%;top:50%;transform:translateY(-50%)}
-  #hand{position:absolute;left:50%;bottom:2%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:1}
-  .card{width:12vw;max-width:58px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease}
+  /* UPDATED: give hand more space and higher stacking */
+  #hand{position:absolute; left:50%; bottom:1%; transform:translateX(-50%); display:flex; gap:4px; flex-wrap:wrap; justify-content:center; z-index:10}
+  /* UPDATED: slightly smaller cards */
+  .card{width:11vw; max-width:52px; aspect-ratio:2/3; border-radius:8px; cursor:pointer; user-select:none; transition:transform .15s ease}
   .card.legal{filter:drop-shadow(0 0 1px #00e1ff);outline:2px solid #00e1ff;border-radius:8px}
   .card.legal:active,.card.legal:hover{transform:translateY(-4px)}
   .pile{position:absolute;width:24px;height:120px;display:flex;flex-direction:column;gap:2px}
@@ -75,7 +78,7 @@
         </select>
       </label>
     </div>
-    <!-- IMPORTANT: explicit type + inline onclick for iOS reliability -->
+    <!-- inline onclick to ensure iOS gesture delivery -->
     <button type="button" class="btn btn-primary" onclick="startGameDirect('classic')">Classic Mode</button>
     <button type="button" class="btn btn-secondary" onclick="startGameDirect('timed')">60-Second Mode</button>
     <p style="font-size:.85rem;opacity:.8;margin-top:.5rem">Use “Add to Home Screen” for chrome-less fullscreen on iPhone.</p>
@@ -133,9 +136,15 @@ function showErr(msg){ const e=document.getElementById('error'); e.textContent=m
 function updateRotateHint(){ const portrait = window.matchMedia('(orientation: portrait)').matches; document.getElementById('rotateHint').style.display = portrait? 'flex':'none'; }
 updateRotateHint(); addEventListener('orientationchange', updateRotateHint);
 
-// --- avatars ---
+// --- avatars with varying emojis ---
 function avatarDataURL(label, ring) {
-  const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop offset='0' stop-color='#fefefe'/><stop offset='1' stop-color='#e8eef6'/></linearGradient></defs><circle cx='40' cy='40' r='38' fill='url(#g)' stroke='${ring}' stroke-width='4'/><circle cx='40' cy='30' r='14' fill='#9ec3ff'/><rect x='18' y='46' rx='12' ry='12' width='44' height='22' fill='#85e3c1'/><text x='40' y='74' font-size='16' font-weight='700' text-anchor='middle' fill='#111'>${label}</text></svg>`);
+  const svg = encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'>
+      <defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop offset='0' stop-color='#fefefe'/><stop offset='1' stop-color='#e8eef6'/></linearGradient></defs>
+      <circle cx='40' cy='40' r='38' fill='url(#g)' stroke='${ring}' stroke-width='4'/>
+      <text x='40' y='50' font-size='34' text-anchor='middle'>${label}</text>
+    </svg>`
+  );
   return 'data:image/svg+xml;utf8,' + svg;
 }
 
@@ -177,8 +186,11 @@ const avS=document.getElementById('avs'), avE=document.getElementById('ave'), av
 const overlay=document.getElementById('overlay');
 const nameInput=document.getElementById('playerName'); const diffSelect=document.getElementById('difficulty');
 
-// avatars
-avS.src=avatarDataURL('You','#22c55e'); avN.src=avatarDataURL('N','#22c55e'); avE.src=avatarDataURL('E','#ec4899'); avW.src=avatarDataURL('W','#ec4899');
+// avatars (varying emojis)
+avS.src=avatarDataURL('🙂','#22c55e');  // South
+avN.src=avatarDataURL('🧠','#22c55e');  // North
+avE.src=avatarDataURL('🤖','#ec4899');  // East
+avW.src=avatarDataURL('🦊','#ec4899');  // West
 
 // --- JJDD logic ---
 const isJoker=c=>c.suit==='JOKER';
@@ -267,13 +279,25 @@ function addBookForWinner(idx){
   const d=document.createElement('div'); d.className='mini'; d.style.marginTop=pile.children.length?'-10px':'0'; pile.appendChild(d);
 }
 
+// simple hint system
+let firstHintShown=false;
+function maybeHint(){
+  if(!firstHintShown){
+    const msg = (current===0)
+      ? 'Your turn — tap a glowing card.'
+      : 'AI is leading — your cards will glow when it’s your turn.';
+    try { document.getElementById('status').textContent += ' · ' + msg; } catch {}
+    firstHintShown=true;
+  }
+}
+
 function play(pi, hi){
   const card=players[pi].hand.splice(hi,1)[0];
   trick.push({player:pi,card});
   if(!leadSuit) { leadSuit=isJoker(card)?null:effectiveSuit(card); if(isTrump(card)) spadesBroken=true; }
   else if(isTrump(card)) spadesBroken=true;
   updateTrick();
-  current=(current+1)%4; renderActive(); showHand(); status();
+  current=(current+1)%4; renderActive(); showHand(); status(); maybeHint();
   if(trick.length<4){ if(current!==0) setTimeout(ai,350); } else { setTimeout(resolve,560); }
 }
 
@@ -304,7 +328,7 @@ function resolve(){
   players[w].tricks++;
   if(w%2===0) scoreNS.tricks++; else scoreEW.tricks++;
   leadSuit=null; trick=[]; current=w;
-  renderScores(); updateTrick(); renderActive(); status();
+  renderScores(); updateTrick(); renderActive(); status(); maybeHint();
   if(players[0].hand.length===0) endHand();
   else { if(current!==0) setTimeout(ai,650); showHand(); }
 }
@@ -333,15 +357,16 @@ function endHand(reason){
 }
 
 function status(){ const text=(current===0? 'Your turn' : ['South','East','North','West'][current]+' to play') + ' · ' + (leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump')); statusEl.textContent=text; }
-function render(){ renderScores(); renderActive(); updateTrick(); showHand(); status(); }
+function render(){ renderScores(); renderActive(); updateTrick(); showHand(); status(); maybeHint(); }
 function goHome(){ tbl.classList.add('hidden'); wel.classList.remove('hidden'); stopTimer(); }
 
 // --- start game (called via inline onclick) ---
 function startGame(m){
+  // UPDATED: South (you) starts for this test build
   mode=m;
   document.getElementById('pile-south').innerHTML=''; document.getElementById('pile-east').innerHTML='';
   scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
-  deal(); current=firstPlayer();
+  deal(); current=0; // South starts
   const pname=(nameInput?.value||'').trim()||'You';
   try{ document.querySelector('#ps b').textContent=pname; }catch{}
   try{ difficulty=(diffSelect?.value)||'normal'; }catch{}
