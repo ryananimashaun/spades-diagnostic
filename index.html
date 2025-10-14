@@ -1,249 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a5a2b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠️</text></svg>">
-<title>Spades Tournament</title>
-<style>
-/* (unchanged CSS from your last version) */
-:root{--felt:#0a5a2b;--felt2:#086b33;--paper:#0a5a2b;--ns:#22c55e;--ew:#ec4899;--glow:#00e1ff;--vh:1vh}
-html,body{height:calc(var(--vh)*100);margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--paper);color:#fff;touch-action:manipulation;overflow:hidden}
-.hidden{display:none!important}
-#welcome{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f2027 0%,#203a43 55%,#2c5364 100%);padding:2rem}
-.hero{max-width:480px;width:100%;background:#fff;border-radius:20px;color:#0b1220;text-align:center;padding:24px;box-shadow:0 0 30px rgba(0,0,0,.3)}
-.title{font-size:2rem;margin:0;background:linear-gradient(90deg,#0ea5e9,#8b5cf6,#ef4444,#22c55e);-webkit-background-clip:text;color:transparent}
-.form{display:flex;flex-direction:column;gap:10px;margin:12px 0}
-input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
-.btn{padding:12px 20px;border:none;border-radius:18px;font-weight:800;cursor:pointer;margin:6px}
-.btn-primary{background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff}
-.btn-secondary{background:#e2e8f0;color:#111}
-#table{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(1000px 600px at 50% 55%,var(--felt2),var(--felt))}
-#board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px}
-#scoreboard{position:absolute;top:1%;left:2%;display:flex;flex-direction:column;gap:4px;z-index:10;font-weight:700}
-.score{padding:6px 10px;border-radius:12px}
-.ns{background:var(--ns)}.ew{background:var(--ew)}
-#status{position:absolute;top:1%;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 10px;border-radius:10px;font-weight:700;z-index:9}
-#player-panel{position:absolute;inset:0;z-index:2;pointer-events:none}
-.p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:6px 8px;border-radius:10px}
-.av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;object-fit:cover}
-.south{left:50%;bottom:28%;transform:translateX(-50%)}.north{left:50%;top:5%;transform:translateX(-50%)}.east{right:4%;top:50%;transform:translateY(-50%)}.west{left:4%;top:50%;transform:translateY(-50%)}
-#hand{position:absolute;left:50%;bottom:.5%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw}
-.card{width:9.5vw;max-width:48px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
-.card *{pointer-events:none}
-.card.legal{outline:2px solid var(--glow)}
-.card.legal:hover,.card.legal:active{transform:translateY(-4px)}
-.slot{position:absolute;width:10vw;max-width:56px;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;z-index:4}
-.slot.south{left:50%;bottom:36%;transform:translateX(-50%)}.slot.north{left:50%;top:20%;transform:translateX(-50%)}.slot.east{right:20%;top:50%;transform:translateY(-50%)}.slot.west{left:20%;top:50%;transform:translateY(-50%)}
-.pile{position:absolute;width:22px;height:110px;display:flex;flex-direction:column;gap:2px}
-#pile-south{left:6%;bottom:6%}#pile-east{right:6%;bottom:6%}
-.mini{width:18px;height:24px;border-radius:4px;background:#ddd}
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:100;text-align:center;padding:1rem}
-</style>
+  <meta charset="utf-8">
+  <!-- MOBILE: modern, safe-area aware viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a5a2b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠️</text></svg>">
+  <title>Spades Tournament</title>
+
+  <style>
+    :root{
+      --felt:#0a5a2b; --felt2:#086b33; --paper:#0a5a2b;
+      --ns:#22c55e; --ew:#ec4899; --glow:#00e1ff;
+      --vh:1vh; /* legacy fallback, set via JS */
+    }
+
+    /* ===== MOBILE BASE: use 100dvh with fallback, allow scroll for keyboard ===== */
+    html, body{
+      margin:0;
+      background:var(--paper);
+      color:#fff;
+      font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      height:100dvh;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:none;              /* stop pull-to-refresh/bounce */
+      -webkit-user-select:none; user-select:none;
+      -webkit-touch-callout:none;
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    @supports not (height:100dvh){
+      html,body{ height:calc(var(--vh) * 100); }
+    }
+
+    .hidden{display:none!important}
+
+    /* Welcome = scrollable (for keyboard) */
+    #welcome{
+      position:relative;
+      min-height:100%;
+      display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(circle at 50% 40%,#0f2027 0%,#203a43 55%,#2c5364 100%);
+      padding:2rem;
+    }
+    .hero{
+      width:min(560px,94vw);
+      background:#fff; color:#0b1220;
+      border-radius:20px; text-align:center; padding:24px;
+      box-shadow:0 0 30px rgba(0,0,0,.3);
+    }
+    .title{font-size:2rem;margin:0;
+      background:linear-gradient(90deg,#0ea5e9,#8b5cf6,#ef4444,#22c55e);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .form{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+    input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
+
+    .btn{padding:12px 20px;border:none;border-radius:18px;font-weight:800;cursor:pointer;margin:6px}
+    .btn-primary{background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff}
+    .btn-secondary{background:#e2e8f0;color:#111}
+
+    /* Game stage = fixed and full-bleed; no scroll */
+    #table{
+      position:fixed; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(1000px 600px at 50% 55%,var(--felt2),var(--felt));
+      overflow:hidden;
+    }
+    #board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px}
+
+    /* Score + status (kept compact for phones) */
+    #scoreboard{position:absolute;top:calc(env(safe-area-inset-top,0) + 6px);left:2%;
+      display:flex;flex-direction:column;gap:4px;z-index:10;font-weight:700}
+    .score{padding:6px 10px;border-radius:12px}
+    .ns{background:var(--ns)} .ew{background:var(--ew)}
+    #status{
+      position:absolute;top:calc(env(safe-area-inset-top,0) + 6px);left:50%;
+      transform:translateX(-50%);
+      background:#fff;color:#000;padding:4px 10px;border-radius:10px;font-weight:700;z-index:9
+    }
+
+    /* Players in a circle */
+    #player-panel{position:absolute;inset:0;z-index:2;pointer-events:none}
+    .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;
+       background:rgba(255,255,255,.18);padding:6px 8px;border-radius:10px;backdrop-filter:blur(2px)}
+    .av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;object-fit:cover}
+    .south{left:50%;bottom:28%;transform:translateX(-50%)}
+    .north{left:50%;top:12%;transform:translateX(-50%)}
+    .east{right:6%;top:50%;transform:translateY(-50%)}
+    .west{left:6%;top:50%;transform:translateY(-50%)}
+
+    /* Hand at bottom with safe-area padding */
+    #hand{
+      position:absolute; left:50%;
+      bottom:calc(env(safe-area-inset-bottom,0) + 8px);
+      transform:translateX(-50%);
+      display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw
+    }
+
+    /* Cards: keep aspect; include fallback heights for older WebViews */
+    .card{width:9.5vw;max-width:52px;aspect-ratio:2/3;
+      height:calc(52px * 1.5); /* fallback for old iOS WebViews */
+      border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;
+    }
+    .card *{pointer-events:none}
+    .card.legal{outline:2px solid var(--glow)}
+    .card.legal:active,.card.legal:hover{transform:translateY(-4px)}
+
+    /* Trick slots near each player; also offset south for home-bar */
+    .slot{position:absolute;width:10vw;max-width:56px;aspect-ratio:2/3;
+      height:calc(56px * 1.5); display:flex;align-items:center;justify-content:center;z-index:4}
+    .slot.south{left:50%;bottom:calc(36% + env(safe-area-inset-bottom,0));transform:translateX(-50%)}
+    .slot.north{left:50%;top:22%;transform:translateX(-50%)}
+    .slot.east{right:20%;top:50%;transform:translateY(-50%)}
+    .slot.west{left:20%;top:50%;transform:translateY(-50%)}
+
+    /* Book piles */
+    .pile{position:absolute;width:22px;height:110px;display:flex;flex-direction:column;gap:2px}
+    #pile-south{left:6%;bottom:calc(6% + env(safe-area-inset-bottom,0))}
+    #pile-east{right:6%;bottom:calc(6% + env(safe-area-inset-bottom,0))}
+    .mini{width:18px;height:24px;border-radius:4px;background:#ddd}
+
+    /* Overlay (end-of-hand) */
+    #overlay{position:fixed;inset:0;padding:1rem;
+      background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:100;text-align:center}
+  </style>
 </head>
 <body>
-<section id="welcome">
-  <div class="hero">
-    <h1 class="title">♠️ Spades Tournament</h1>
-    <p>JJDD rules · offline · iPhone-ready</p>
-    <div class="form">
-      <label>Player Name <input id="playerName" placeholder="You"></label>
-      <label>Difficulty
-        <select id="difficulty"><option value="easy">Easy</option><option selected value="normal">Normal</option><option value="hard">Hard</option></select>
-      </label>
+
+  <!-- Welcome (scrollable for keyboard) -->
+  <section id="welcome">
+    <div class="hero">
+      <h1 class="title">♠️ Spades Tournament</h1>
+      <p>JJDD rules · offline · iPhone/Android-ready</p>
+      <div class="form">
+        <label>Player Name <input id="playerName" placeholder="You" autocomplete="name"></label>
+        <label>Difficulty
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option selected value="normal">Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+      </div>
+      <button id="classicBtn" class="btn btn-primary">Classic Mode</button>
+      <button id="timedBtn" class="btn btn-secondary">60-Second Mode</button>
     </div>
-    <button id="classicBtn" class="btn btn-primary">Classic Mode</button>
-    <button id="timedBtn" class="btn btn-secondary">60-Second Mode</button>
-  </div>
-</section>
+  </section>
 
-<section id="table" class="hidden">
-  <div id="board">
-    <div id="scoreboard">
-      <div id="scoreNS" class="score ns">NS · Bid — · Tricks 0</div>
-      <div id="scoreEW" class="score ew">EW · Bid — · Tricks 0</div>
+  <!-- Game Stage -->
+  <section id="table" class="hidden" role="application" aria-label="Spades table">
+    <div id="board">
+      <div id="scoreboard">
+        <div id="scoreNS" class="score ns">NS · Bid — · Tricks 0</div>
+        <div id="scoreEW" class="score ew">EW · Bid — · Tricks 0</div>
+      </div>
+      <div id="status"></div>
+
+      <div id="player-panel">
+        <div id="ps" class="p south"><img id="avs" class="av" alt="S"/><b>You</b></div>
+        <div id="pe" class="p east"><img id="ave" class="av" alt="E"/><b>East</b></div>
+        <div id="pn" class="p north"><img id="avn" class="av" alt="N"/><b>North</b></div>
+        <div id="pw" class="p west"><img id="avw" class="av" alt="W"/><b>West</b></div>
+      </div>
+
+      <div id="ts" class="slot south"></div>
+      <div id="te" class="slot east"></div>
+      <div id="tn" class="slot north"></div>
+      <div id="tw" class="slot west"></div>
+
+      <div id="hand"></div>
+      <div id="pile-south" class="pile"></div>
+      <div id="pile-east" class="pile"></div>
     </div>
-    <div id="status"></div>
-    <div id="player-panel">
-      <div id="ps" class="p south"><img id="avs" class="av" alt="S"/><b>You</b></div>
-      <div id="pe" class="p east"><img id="ave" class="av" alt="E"/><b>East</b></div>
-      <div id="pn" class="p north"><img id="avn" class="av" alt="N"/><b>North</b></div>
-      <div id="pw" class="p west"><img id="avw" class="av" alt="W"/><b>West</b></div>
-    </div>
-    <div id="ts" class="slot south"></div><div id="te" class="slot east"></div><div id="tn" class="slot north"></div><div id="tw" class="slot west"></div>
-    <div id="hand"></div>
-    <div id="pile-south" class="pile"></div><div id="pile-east" class="pile"></div>
-  </div>
-  <div id="overlay"></div>
-</section>
 
-<script>
-/* ===== viewport fix ===== */
-function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px');}
-setVh();window.addEventListener('resize',setVh);
+    <div id="overlay"></div>
+  </section>
 
-/* ===== element refs (explicit — no browser globals) ===== */
-const welcomeEl = document.getElementById('welcome');
-const tableEl   = document.getElementById('table');
-const handEl    = document.getElementById('hand');
-const statusEl  = document.getElementById('status');
-const nsEl      = document.getElementById('scoreNS');
-const ewEl      = document.getElementById('scoreEW');
-const slots     = {
-  0: document.getElementById('ts'),
-  1: document.getElementById('te'),
-  2: document.getElementById('tn'),
-  3: document.getElementById('tw'),
-};
-const pileSouth = document.getElementById('pile-south');
-const pileEast  = document.getElementById('pile-east');
-const overlay   = document.getElementById('overlay');
-const nameInput = document.getElementById('playerName');
-const diffSelect= document.getElementById('difficulty');
-const avs = document.getElementById('avs');
-const ave = document.getElementById('ave');
-const avn = document.getElementById('avn');
-const avw = document.getElementById('avw');
+  <script>
+    /* ===== Dynamic viewport fix (iOS bars/keyboard/orientation) ===== */
+    function setVh(){
+      const vh = (window.innerHeight || document.documentElement.clientHeight) * 0.01;
+      document.documentElement.style.setProperty('--vh', vh + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh, {passive:true});
+    window.addEventListener('orientationchange', setVh, {passive:true});
+    document.addEventListener('visibilitychange', setVh, {passive:true});
+    if (window.visualViewport){
+      visualViewport.addEventListener('resize', setVh, {passive:true});
+      visualViewport.addEventListener('scroll', setVh, {passive:true});
+    }
 
-/* ===== buttons ===== */
-document.getElementById('classicBtn').addEventListener('click',()=>startGame('classic'));
-document.getElementById('timedBtn' ).addEventListener('click',()=>startGame('timed'));
+    /* ===== Element refs ===== */
+    const welcomeEl = document.getElementById('welcome');
+    const tableEl   = document.getElementById('table');
+    const handEl    = document.getElementById('hand');
+    const statusEl  = document.getElementById('status');
+    const nsEl      = document.getElementById('scoreNS');
+    const ewEl      = document.getElementById('scoreEW');
+    const slots     = {
+      0: document.getElementById('ts'),
+      1: document.getElementById('te'),
+      2: document.getElementById('tn'),
+      3: document.getElementById('tw'),
+    };
+    const pileSouth = document.getElementById('pile-south');
+    const pileEast  = document.getElementById('pile-east');
+    const overlay   = document.getElementById('overlay');
+    const nameInput = document.getElementById('playerName');
+    const diffSelect= document.getElementById('difficulty');
+    const avs = document.getElementById('avs');
+    const ave = document.getElementById('ave');
+    const avn = document.getElementById('avn');
+    const avw = document.getElementById('avw');
 
-/* ===== emoji avatars (utf8 data-uri) ===== */
-function makeAvatar(emoji,color='#000'){
-  const svg=`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><circle cx='40' cy='40' r='38' fill='white' stroke='${color}' stroke-width='3'/><text x='40' y='55' font-size='40' text-anchor='middle'>${emoji}</text></svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
-avs.src=makeAvatar('🙂','#22c55e');
-avn.src=makeAvatar('🧠','#22c55e');
-ave.src=makeAvatar('🤖','#ec4899');
-avw.src=makeAvatar('🦊','#ec4899');
+    /* Buttons */
+    document.getElementById('classicBtn').addEventListener('click',()=>startGame('classic'));
+    document.getElementById('timedBtn' ).addEventListener('click',()=>startGame('timed'));
 
-/* ===== JJDD logic (unchanged) ===== */
-const suits=['♠','♣','♦','♥'], ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-const isJoker=c=>c.suit==='JOKER', isTrump=c=>isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
-const cardVal=c=>ranks.indexOf(c.rank);
-function trumpPower(c){if(isJoker(c))return c.rank==='BJ'?100:99;if(c.suit==='♦'&&c.rank==='2')return 98;if(c.suit==='♠'){if(c.rank==='2')return 97;return 50+ranks.indexOf(c.rank);}return -1;}
-function effectiveSuit(c){if(isJoker(c))return null;if(c.suit==='♦'&&c.rank==='2')return'♠';return c.suit;}
-function buildDeck(){const d=[];for(const s of suits){for(const r of ranks)d.push({suit:s,rank:r});}['♣','♥'].forEach(s=>{const i=d.findIndex(c=>c.suit===s&&c.rank==='2');if(i>-1)d.splice(i,1);});d.push({suit:'JOKER',rank:'BJ'},{suit:'JOKER',rank:'LJ'});return d;}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function suitColor(s){return s==='♥'||s==='♦'?'#e53e3e':'#111827';}
-function createCardSVG(c){const n='http://www.w3.org/2000/svg';const s=document.createElementNS(n,'svg');s.setAttribute('viewBox','0 0 60 90');s.classList.add('card');const r=document.createElementNS(n,'rect');r.setAttribute('width','60');r.setAttribute('height','90');r.setAttribute('rx','10');r.setAttribute('fill','#fff');r.setAttribute('stroke','#cbd5e1');const t=document.createElementNS(n,'text');t.setAttribute('x','10');t.setAttribute('y','25');t.setAttribute('font-weight','bold');t.setAttribute('fill',suitColor(c.suit));t.textContent=isJoker(c)?(c.rank==='BJ'?'BJ':'LJ'):c.rank;const sym=document.createElementNS(n,'text');sym.setAttribute('x','30');sym.setAttribute('y','55');sym.setAttribute('text-anchor','middle');sym.setAttribute('fill',suitColor(c.suit));sym.textContent=isJoker(c)?'🃏':c.suit;s.append(r,t,sym);return s;}
+    /* Consistent emoji avatars (SVG data URIs) */
+    function makeAvatar(emoji,color='#000'){
+      const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
+        <circle cx='40' cy='40' r='38' fill='white' stroke='${color}' stroke-width='3'/>
+        <text x='40' y='55' font-size='40' text-anchor='middle'>${emoji}</text></svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+    avs.src=makeAvatar('🙂','#22c55e');
+    avn.src=makeAvatar('🧠','#22c55e');
+    ave.src=makeAvatar('🤖','#ec4899');
+    avw.src=makeAvatar('🦊','#ec4899');
 
-/* state */
-const players=[],scoreNS={bid:0,tricks:0,score:0},scoreEW={bid:0,tricks:0,score:0};
-let current=0,leadSuit=null,trick=[],spadesBroken=false,mode='classic',difficulty='normal';
+    /* ===== JJDD variant (kept as-is from your last post) ===== */
+    const suits=['♠','♣','♦','♥'], ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const isJoker=c=>c.suit==='JOKER';
+    const isTrump=c=>isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');  // your current variant
+    const cardVal=c=>ranks.indexOf(c.rank);
+    function trumpPower(c){
+      if(isJoker(c)) return c.rank==='BJ'?100:99;
+      if(c.suit==='♦'&&c.rank==='2') return 98;
+      if(c.suit==='♠'){ if(c.rank==='2') return 97; return 50 + ranks.indexOf(c.rank); }
+      return -1;
+    }
+    function effectiveSuit(c){ if(isJoker(c)) return null; if(c.suit==='♦'&&c.rank==='2') return '♠'; return c.suit; }
 
-/* engine */
-function estimateBid(h){let b=0;for(const c of h){if(isJoker(c))b+=1.5;else if(c.suit==='♠'){const ri=ranks.indexOf(c.rank);b+=(c.rank==='2')?1.2:(ri>=10?1:(ri>=8?0.7:0.3));}else if(c.suit==='♦'&&c.rank==='2')b+=1.1;else if(ranks.indexOf(c.rank)>=10)b+=0.5;}return Math.max(1,Math.round(b));}
-function deal(){const d=shuffle(buildDeck());for(let i=0;i<4;i++)players[i]={hand:[],tricks:0,bid:0};for(let i=0;i<52;i++)players[i%4].hand.push(d[i]);for(const p of players){p.hand.sort((a,b)=>(a.suit==='JOKER'?99:suits.indexOf(a.suit))-(b.suit==='JOKER'?99:suits.indexOf(b.suit))||ranks.indexOf(a.rank)-ranks.indexOf(b.rank));p.bid=estimateBid(p.hand);}scoreNS.bid=players[0].bid+players[2].bid;scoreEW.bid=players[1].bid+players[3].bid;}
-function firstPlayer(){for(const r of ['2','3','4'])for(let i=0;i<4;i++)if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r))return i;return 0;}
-function renderScores(){nsEl.textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks||0}`;ewEl.textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks||0}`;}
-function renderActive(){document.querySelectorAll('.p').forEach((e,i)=>e.classList.toggle('active',i===current));}
-function updateTrick(){Object.values(slots).forEach(s=>s.innerHTML='');trick.forEach(p=>slots[p.player].appendChild(createCardSVG(p.card)));}
-function status(){statusEl.textContent=(current===0?'Your turn':'AI')+' · '+(leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));}
+    function buildDeck(){
+      const d=[]; for(const s of suits){ for(const r of ranks) d.push({suit:s,rank:r}); }
+      // remove 2♣ and 2♥ per your last sample, add Jokers
+      ['♣','♥'].forEach(s=>{ const i=d.findIndex(c=>c.suit===s&&c.rank==='2'); if(i>-1) d.splice(i,1); });
+      d.push({suit:'JOKER',rank:'BJ'},{suit:'JOKER',rank:'LJ'});
+      return d;
+    }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function suitColor(s){ return (s==='♥'||s==='♦') ? '#e53e3e' : '#111827'; }
 
-function legalMoves(h){
-  if(current!==0) return [];
-  if(!leadSuit){
-    const onlyTr=h.every(isTrump);
-    return h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);
-  }
-  const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
-  return h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
-}
+    function createCardSVG(c){
+      const n='http://www.w3.org/2000/svg';
+      const s=document.createElementNS(n,'svg'); s.setAttribute('viewBox','0 0 60 90'); s.classList.add('card');
+      const r=document.createElementNS(n,'rect'); r.setAttribute('width','60'); r.setAttribute('height','90'); r.setAttribute('rx','10'); r.setAttribute('fill','#fff'); r.setAttribute('stroke','#cbd5e1');
+      const t=document.createElementNS(n,'text'); t.setAttribute('x','10'); t.setAttribute('y','25'); t.setAttribute('font-weight','bold'); t.setAttribute('fill', suitColor(c.suit));
+      t.textContent = isJoker(c) ? (c.rank==='BJ'?'BJ':'LJ') : c.rank;
+      const sym=document.createElementNS(n,'text'); sym.setAttribute('x','30'); sym.setAttribute('y','55'); sym.setAttribute('text-anchor','middle'); sym.setAttribute('fill', suitColor(c.suit));
+      sym.textContent = isJoker(c) ? '🃏' : c.suit;
+      s.append(r,t,sym);
+      return s;
+    }
 
-function showHand(){
-  handEl.innerHTML='';
-  const h=players[0].hand; const legal=legalMoves(h);
-  h.forEach((c,i)=>{
-    const e=createCardSVG(c);
-    if(legal.includes(i)) e.classList.add('legal');
-    e.addEventListener('click',()=>{
-      if(current!==0) return;
-      if(!legal.includes(i)){ alert('Must follow suit'); return; }
-      play(0,i);
-    },{passive:true});
-    handEl.appendChild(e);
-  });
-}
+    /* ===== Game state ===== */
+    const players=[], scoreNS={bid:0,tricks:0,score:0}, scoreEW={bid:0,tricks:0,score:0};
+    let current=0, leadSuit=null, trick=[], spadesBroken=false, mode='classic', difficulty='normal';
 
-function cmp(a,b,lead){
-  const at=isTrump(a), bt=isTrump(b);
-  if(at||bt) return (at?trumpPower(a):-1)-(bt?trumpPower(b):-1);
-  const as=effectiveSuit(a), bs=effectiveSuit(b);
-  if(as===bs) return cardVal(a)-cardVal(b);
-  if(as===lead) return 1; if(bs===lead) return -1;
-  return 0;
-}
+    function estimateBid(h){
+      let b=0;
+      for(const c of h){
+        if(isJoker(c)) b+=1.5;
+        else if(c.suit==='♠'){
+          const ri=ranks.indexOf(c.rank);
+          b += (c.rank==='2') ? 1.2 : (ri>=10?1:(ri>=8?0.7:0.3));
+        } else if(c.suit==='♦'&&c.rank==='2') b+=1.1;
+        else if(ranks.indexOf(c.rank)>=10) b+=0.5;
+      }
+      return Math.max(1,Math.round(b));
+    }
 
-function play(pi,hi){
-  const c=players[pi].hand.splice(hi,1)[0];
-  trick.push({player:pi,card:c});
-  if(!leadSuit){ leadSuit=isJoker(c)?null:effectiveSuit(c); if(isTrump(c)) spadesBroken=true; }
-  else if(isTrump(c)) spadesBroken=true;
+    function deal(){
+      const d=shuffle(buildDeck());
+      for(let i=0;i<4;i++) players[i]={hand:[],tricks:0,bid:0};
+      for(let i=0;i<52;i++) players[i%4].hand.push(d[i]);
+      for(const p of players){
+        p.hand.sort((a,b)=> (a.suit==='JOKER'?99:suits.indexOf(a.suit)) - (b.suit==='JOKER'?99:suits.indexOf(b.suit)) || ranks.indexOf(a.rank)-ranks.indexOf(b.rank));
+        p.bid=estimateBid(p.hand);
+      }
+      scoreNS.bid=players[0].bid+players[2].bid; scoreEW.bid=players[1].bid+players[3].bid;
+    }
 
-  updateTrick();
-  current=(current+1)%4; renderActive(); showHand(); status();
-  if(trick.length<4){ if(current!==0) setTimeout(ai,500); }
-  else setTimeout(resolve,700);
-}
+    function firstPlayer(){
+      for(const r of ['2','3','4']){
+        for(let i=0;i<4;i++) if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r)) return i;
+      }
+      return 0;
+    }
 
-function ai(){
-  const p=current, h=players[p].hand;
-  let legal;
-  if(!leadSuit){ const onlyTr=h.every(isTrump); legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null); }
-  else { const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit); legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null); }
-  if(!legal.length) legal=h.map((_,i)=>i);
-  const pick=legal[Math.floor(Math.random()*legal.length)];
-  play(p,pick);
-}
+    function renderScores(){
+      nsEl.textContent = `NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks||0}`;
+      ewEl.textContent = `EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks||0}`;
+    }
+    function renderActive(){
+      document.querySelectorAll('.p').forEach((e,i)=>e.classList.toggle('active', i===current));
+    }
+    function updateTrick(){
+      Object.values(slots).forEach(s=>s.innerHTML='');
+      trick.forEach(p=>slots[p.player].appendChild(createCardSVG(p.card)));
+    }
+    function status(){
+      statusEl.textContent = (current===0?'Your turn':'AI')
+        + ' · ' + (leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));
+    }
 
-function resolve(){
-  let win=trick[0];
-  for(const p of trick.slice(1)){ if(cmp(p.card,win.card,leadSuit)>0) win=p; }
-  const w=win.player;
-  (w%2===0 ? (scoreNS.tricks=(scoreNS.tricks||0)+1) : (scoreEW.tricks=(scoreEW.tricks||0)+1));
-  leadSuit=null; trick=[]; current=w;
-  renderScores(); updateTrick(); renderActive(); status();
-  if(players[0].hand.length===0) endHand();
-  else { if(current!==0) setTimeout(ai,700); showHand(); }
-}
+    function legalMoves(h){
+      if(current!==0) return [];
+      if(!leadSuit){
+        const onlyTr = h.every(isTrump);
+        return h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);
+      }
+      const has = h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
+      return h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
+    }
 
-function endHand(){
-  const ns=scoreNS.tricks||0, ew=scoreEW.tricks||0;
-  const r = ns>ew ? 'NS win' : (ew>ns ? 'EW win' : 'Tie');
-  overlay.innerHTML = `<div class='win'><b>${r}</b><div>NS ${ns} - EW ${ew}</div></div>
-  <button id='nxt' class='btn btn-primary'>Next</button>
-  <button id='home' class='btn btn-secondary'>Home</button>`;
-  overlay.style.display='flex';
-  document.getElementById('nxt').onclick=()=>{ overlay.style.display='none'; startGame(mode); };
-  document.getElementById('home').onclick=()=>{ overlay.style.display='none'; goHome(); };
-}
+    function showHand(){
+      handEl.innerHTML='';
+      const h=players[0].hand; const legal=legalMoves(h);
+      // Make bottom cards large enough on phones
+      const phoneWide = Math.min(window.innerWidth, document.documentElement.clientWidth);
+      if (phoneWide < 420){ handEl.style.gap = '3px'; }
 
-function goHome(){ tableEl.classList.add('hidden'); welcomeEl.classList.remove('hidden'); }
+      h.forEach((c,i)=>{
+        const e=createCardSVG(c);
+        if(legal.includes(i)) e.classList.add('legal');
+        // Prevent default gestures on the card row
+        e.style.touchAction = 'none';
+        e.addEventListener('click',()=>{
+          if(current!==0) return;
+          if(!legal.includes(i)){ alert('Must follow suit'); return; }
+          play(0,i);
+        },{passive:true});
+        handEl.appendChild(e);
+      });
+    }
 
-function startGame(m){
-  mode=m;
-  // reset
-  pileSouth.innerHTML=''; pileEast.innerHTML='';
-  scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
+    function cmp(a,b,lead){
+      const at=isTrump(a), bt=isTrump(b);
+      if(at||bt) return (at?trumpPower(a):-1)-(bt?trumpPower(b):-1);
+      const as=effectiveSuit(a), bs=effectiveSuit(b);
+      if(as===bs) return cardVal(a)-cardVal(b);
+      if(as===lead) return 1; if(bs===lead) return -1;
+      return 0;
+    }
 
-  deal(); current = firstPlayer();
+    function play(pi,hi){
+      const c=players[pi].hand.splice(hi,1)[0];
+      trick.push({player:pi,card:c});
+      if(!leadSuit){ leadSuit=isJoker(c)?null:effectiveSuit(c); if(isTrump(c)) spadesBroken=true; }
+      else if(isTrump(c)) spadesBroken=true;
 
-  welcomeEl.classList.add('hidden');
-  tableEl.classList.remove('hidden');
+      updateTrick();
+      current=(current+1)%4; renderActive(); showHand(); status();
+      if(trick.length<4){ if(current!==0) setTimeout(ai,400); }
+      else setTimeout(resolve,650);
+    }
 
-  // difficulty & name (no behavior change)
-  try{ difficulty = diffSelect.value || 'normal'; }catch{}
-  try{ document.querySelector('#ps b').textContent = (nameInput.value||'You'); }catch{}
+    function ai(){
+      const p=current, h=players[p].hand;
+      let legal;
+      if(!leadSuit){ const onlyTr=h.every(isTrump); legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null); }
+      else { const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit); legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null); }
+      if(!legal.length) legal=h.map((_,i)=>i);
+      const pick=legal[Math.floor(Math.random()*legal.length)];
+      play(p,pick);
+    }
 
-  renderScores(); renderActive(); updateTrick(); showHand(); status();
-  if(current!==0) setTimeout(ai,600);
-}
-</script>
+    function resolve(){
+      let win=trick[0];
+      for(const p of trick.slice(1)){ if(cmp(p.card,win.card,leadSuit)>0) win=p; }
+      const w=win.player;
+      (w%2===0 ? (scoreNS.tricks=(scoreNS.tricks||0)+1) : (scoreEW.tricks=(scoreEW.tricks||0)+1));
+
+      // Add mini book to the correct team’s pile (only East keeps EW; only South keeps NS)
+      const chip=document.createElement('div'); chip.className='mini';
+      if(w%2===0) pileSouth.appendChild(chip); else pileEast.appendChild(chip);
+
+      leadSuit=null; trick=[]; current=w;
+      renderScores(); updateTrick(); renderActive(); status();
+      if(players[0].hand.length===0) endHand();
+      else { if(current!==0) setTimeout(ai,600); showHand(); }
+    }
+
+    function endHand(){
+      const ns=scoreNS.tricks||0, ew=scoreEW.tricks||0;
+      const r = ns>ew ? 'NS win' : (ew>ns ? 'EW win' : 'Tie');
+      overlay.innerHTML = `<div class='win'><b>${r}</b><div>NS ${ns} - EW ${ew}</div></div>
+        <button id='nxt' class='btn btn-primary'>Next Hand</button>
+        <button id='home' class='btn btn-secondary'>Main Menu</button>`;
+      overlay.style.display='flex';
+      document.getElementById('nxt').onclick=()=>{ overlay.style.display='none'; startGame(mode); };
+      document.getElementById('home').onclick=()=>{ overlay.style.display='none'; goHome(); };
+    }
+
+    function goHome(){
+      tableEl.classList.add('hidden');
+      welcomeEl.classList.remove('hidden');
+      // scroll to top to avoid half-hidden hero after keyboard
+      window.scrollTo({top:0, behavior:'instant'});
+    }
+
+    function startGame(m){
+      mode=m;
+      // reset hand state
+      pileSouth.innerHTML=''; pileEast.innerHTML='';
+      scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
+
+      deal(); current = firstPlayer();
+
+      // show stage
+      welcomeEl.classList.add('hidden');
+      tableEl.classList.remove('hidden');
+
+      // difficulty & name (no logic change yet)
+      try{ difficulty = diffSelect.value || 'normal'; }catch{}
+      try{ document.querySelector('#ps b').textContent = (nameInput.value||'You'); }catch{}
+
+      renderScores(); renderActive(); updateTrick(); showHand(); status();
+      if(current!==0) setTimeout(ai,550);
+    }
+  </script>
 </body>
 </html>
