@@ -12,14 +12,9 @@
   :root{--felt:#0a5a2b;--felt2:#086b33;--ink:#0b1220;--paper:#0a5a2b;--ns:#22c55e;--ns-ink:#052e17;--ew:#ec4899;--ew-ink:#3a0b1f;--glow:#00e1ff;--vh:1vh}
   html,body{height:calc(var(--vh)*100);margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--paper);color:#f7fafc;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;touch-action:manipulation;overflow:hidden}
   .hidden{display:none!important}
-
   #error{position:fixed;left:0;right:0;top:0;background:#b91c1c;color:#fff;padding:.5rem 1rem;font-weight:700;display:none;z-index:10000}
-
-  /* Rotate hint for portrait */
   #rotateHint{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0008;color:#fff;z-index:1000;text-align:center;padding:20px}
   #rotateBox{background:#111a;padding:16px 20px;border-radius:14px;font-weight:700}
-
-  /* Welcome */
   #welcome{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f2027 0%,#203a43 55%,#2c5364 100%);padding:2rem;box-sizing:border-box}
   #welcome .hero{width:100%;max-width:480px;padding:24px;border-radius:20px;background:linear-gradient(135deg,#fff 0%,#f0f9ff 35%,#fef3ff 65%,#f0fff4 100%);box-shadow:0 12px 40px rgba(14,18,40,.18);text-align:center;color:#0b1220}
   .title{font-size:1.9rem;margin:0;background:linear-gradient(90deg,#0ea5e9,#8b5cf6,#ef4444,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -28,8 +23,6 @@
   .btn{display:inline-block;margin:6px;padding:12px 20px;border-radius:18px;border:none;cursor:pointer;font-weight:800;font-size:1rem}
   .btn-primary{background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff}
   .btn-secondary{background:#e2e8f0;color:#111}
-
-  /* Table */
   #table{position:fixed;inset:0;background:radial-gradient(1200px 700px at 50% 55%,var(--felt2),var(--felt));display:flex;align-items:center;justify-content:center;overflow:hidden}
   #board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px;touch-action:none}
   #scoreboard{position:absolute;top:1%;left:2%;display:flex;flex-direction:column;gap:4px;z-index:7;font-size:clamp(.7rem,2vw,1rem)}
@@ -37,8 +30,6 @@
   .ns{background:var(--ns);color:var(--ns-ink)} .ew{background:var(--ew);color:var(--ew-ink)}
   #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.9);color:#0b1220;font-weight:800;z-index:6;text-align:center;font-size:clamp(.7rem,2vw,1rem)}
   #timer{position:absolute;top:1%;right:2%;padding:4px 10px;border-radius:16px;background:#fff;color:#0b1220;font-weight:800;display:none}
-
-  /* Players */
   #player-panel{position:absolute;inset:0;z-index:5;pointer-events:none}
   .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.18);border-radius:10px;padding:6px 8px;min-width:80px;font-size:clamp(.7rem,2vw,1rem)}
   .p.active{box-shadow:0 0 10px 2px var(--glow)}
@@ -48,26 +39,18 @@
   .east{right:4%;top:50%;transform:translateY(-50%)}
   .west{left:4%;top:50%;transform:translateY(-50%)}
   .ring-ns{box-shadow:0 0 0 2px rgba(34,197,94,.9)} .ring-ew{box-shadow:0 0 0 2px rgba(236,72,153,.9)}
-
-  /* Trick slots */
   .slot{position:absolute;width:10vw;max-width:60px;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;z-index:4}
   .slot.south{left:50%;bottom:32%;transform:translateX(-50%)}
   .slot.north{left:50%;top:20%;transform:translateX(-50%)}
   .slot.east{right:20%;top:50%;transform:translateY(-50%)}
   .slot.west{left:20%;top:50%;transform:translateY(-50%)}
-
-  /* Hand */
   #hand{position:absolute;left:50%;bottom:2%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:1}
   .card{width:12vw;max-width:58px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease}
   .card.legal{filter:drop-shadow(0 0 1px #00e1ff);outline:2px solid #00e1ff;border-radius:8px}
   .card.legal:active,.card.legal:hover{transform:translateY(-4px)}
-
-  /* Piles */
   .pile{position:absolute;width:24px;height:120px;display:flex;flex-direction:column;gap:2px}
   #pile-south{left:6%;bottom:6%} #pile-east{right:6%;bottom:6%}
   .mini{width:20px;height:26px;border-radius:4px;background:linear-gradient(180deg,#e2e8f0,#cbd5e1);box-shadow:0 2px 4px rgba(0,0,0,.25)}
-
-  /* Overlay */
   #overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:10;text-align:center;padding:1rem}
   .win{display:flex;flex-direction:column;gap:10px;align-items:center;background:linear-gradient(90deg,#22c55e22,#a855f722);border:1px solid #e2e8f0;padding:10px 14px;border-radius:14px}
 </style>
@@ -92,8 +75,9 @@
         </select>
       </label>
     </div>
-    <button id="classicBtn" class="btn btn-primary">Classic Mode</button>
-    <button id="timedBtn" class="btn btn-secondary">60-Second Mode</button>
+    <!-- IMPORTANT: explicit type + inline onclick for iOS reliability -->
+    <button type="button" class="btn btn-primary" onclick="startGameDirect('classic')">Classic Mode</button>
+    <button type="button" class="btn btn-secondary" onclick="startGameDirect('timed')">60-Second Mode</button>
     <p style="font-size:.85rem;opacity:.8;margin-top:.5rem">Use “Add to Home Screen” for chrome-less fullscreen on iPhone.</p>
   </div>
 </section>
@@ -141,7 +125,7 @@
 </section>
 
 <script>
-// ===== Basic utilities & iPhone layout helpers =====
+// --- iPhone helpers ---
 const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 function setVh(){ document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px'); }
 setVh(); addEventListener('resize', setVh);
@@ -149,13 +133,13 @@ function showErr(msg){ const e=document.getElementById('error'); e.textContent=m
 function updateRotateHint(){ const portrait = window.matchMedia('(orientation: portrait)').matches; document.getElementById('rotateHint').style.display = portrait? 'flex':'none'; }
 updateRotateHint(); addEventListener('orientationchange', updateRotateHint);
 
-// ===== Offline avatars (inline) =====
+// --- avatars ---
 function avatarDataURL(label, ring) {
   const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop offset='0' stop-color='#fefefe'/><stop offset='1' stop-color='#e8eef6'/></linearGradient></defs><circle cx='40' cy='40' r='38' fill='url(#g)' stroke='${ring}' stroke-width='4'/><circle cx='40' cy='30' r='14' fill='#9ec3ff'/><rect x='18' y='46' rx='12' ry='12' width='44' height='22' fill='#85e3c1'/><text x='40' y='74' font-size='16' font-weight='700' text-anchor='middle' fill='#111'>${label}</text></svg>`);
   return 'data:image/svg+xml;utf8,' + svg;
 }
 
-// ===== Cards & rendering =====
+// --- cards ---
 function suitColor(s){ return s==='♥'||s==='♦' ? '#e53e3e' : '#1f2937'; }
 function createCardSVG(card){
   const svgNS='http://www.w3.org/2000/svg';
@@ -176,16 +160,15 @@ function createCardSVG(card){
   svg.append(top,bot,sb,sb2); return svg;
 }
 
-// ===== Game state =====
+// --- state ---
 const suits=['♠','♣','♦','♥'];
 const ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const players=[]; let current=0, leadSuit=null, trick=[], spadesBroken=false; let mode='classic', difficulty='normal';
 const scoreNS={bid:0,tricks:0,score:0,bags:0}, scoreEW={bid:0,tricks:0,score:0,bags:0};
 let timerId=null; let timeLeft=0;
 
-// ===== UI refs =====
+// --- refs ---
 const wel=document.getElementById('welcome'); const tbl=document.getElementById('table');
-const classicBtn=document.getElementById('classicBtn'); const timedBtn=document.getElementById('timedBtn');
 const handEl=document.getElementById('hand'); const statusEl=document.getElementById('status');
 const nsEl=document.getElementById('scoreNS'); const ewEl=document.getElementById('scoreEW');
 const metaS=document.getElementById('meta-s'), metaE=document.getElementById('meta-e'), metaN=document.getElementById('meta-n'), metaW=document.getElementById('meta-w');
@@ -197,7 +180,7 @@ const nameInput=document.getElementById('playerName'); const diffSelect=document
 // avatars
 avS.src=avatarDataURL('You','#22c55e'); avN.src=avatarDataURL('N','#22c55e'); avE.src=avatarDataURL('E','#ec4899'); avW.src=avatarDataURL('W','#ec4899');
 
-// ===== JJDD logic =====
+// --- JJDD logic ---
 const isJoker=c=>c.suit==='JOKER';
 const isTrump=c=> isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
 function trumpPower(c){
@@ -349,30 +332,30 @@ function endHand(reason){
   document.getElementById('home').onclick=()=>{ overlay.style.display='none'; goHome(); };
 }
 
-function status(){
-  const text = (current===0? 'Your turn' : ['South','East','North','West'][current]+ ' to play') + ' · ' + (leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));
-  statusEl.textContent=text;
-}
-
+function status(){ const text=(current===0? 'Your turn' : ['South','East','North','West'][current]+' to play') + ' · ' + (leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump')); statusEl.textContent=text; }
 function render(){ renderScores(); renderActive(); updateTrick(); showHand(); status(); }
 function goHome(){ tbl.classList.add('hidden'); wel.classList.remove('hidden'); stopTimer(); }
 
+// --- start game (called via inline onclick) ---
 function startGame(m){
-  try{
-    mode=m;
-    document.getElementById('pile-south').innerHTML=''; document.getElementById('pile-east').innerHTML='';
-    scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
-    deal(); current=firstPlayer();
-    const pname=(nameInput?.value||'').trim()||'You';
-    try{ document.querySelector('#ps b').textContent=pname; }catch{}
-    try{ difficulty=(diffSelect?.value)||'normal'; }catch{}
-    wel.classList.add('hidden'); tbl.classList.remove('hidden');
-    render();
-    if(current!==0) setTimeout(ai,600);
-    if(mode==='timed') startTimer(60); else stopTimer();
-    console.log('Game started:', m);
-  }catch(err){ showErr('Startup error: '+(err.message||err)); }
+  mode=m;
+  document.getElementById('pile-south').innerHTML=''; document.getElementById('pile-east').innerHTML='';
+  scoreNS.tricks=0; scoreEW.tricks=0; leadSuit=null; trick=[]; spadesBroken=false;
+  deal(); current=firstPlayer();
+  const pname=(nameInput?.value||'').trim()||'You';
+  try{ document.querySelector('#ps b').textContent=pname; }catch{}
+  try{ difficulty=(diffSelect?.value)||'normal'; }catch{}
+  wel.classList.add('hidden'); tbl.classList.remove('hidden');
+  render();
+  if(current!==0) setTimeout(ai,600);
+  if(mode==='timed') startTimer(60); else stopTimer();
 }
+
+// helper wrapper to ensure it always runs even if something else errors
+window.startGameDirect = function(mode){
+  try{ startGame(mode); }
+  catch(err){ showErr('Startup error: '+(err && err.message ? err.message : err)); }
+};
 
 // Timer
 function startTimer(seconds){
@@ -381,10 +364,6 @@ function startTimer(seconds){
   timerId=setInterval(()=>{ timeLeft--; timerEl.textContent=`${timeLeft}s`; if(timeLeft<=0){ clearInterval(timerId); timerEl.textContent='0s'; endHand('Time up'); } },1000);
 }
 function stopTimer(){ clearInterval(timerId); const timerEl=document.getElementById('timer'); timerEl.style.display='none'; }
-
-// Buttons — always start the game on tap (no fullscreen dependency)
-classicBtn.addEventListener('click', ()=>{ startGame('classic'); }, {passive:true});
-timedBtn.addEventListener('click', ()=>{ startGame('timed'); }, {passive:true});
 
 // Prevent scroll bounce on iOS
 document.addEventListener('touchmove', function(e){ if(!e.target.closest('#hand,.card')) e.preventDefault(); }, {passive:false});
