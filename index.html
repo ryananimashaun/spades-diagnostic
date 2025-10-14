@@ -26,14 +26,12 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 .score{padding:6px 10px;border-radius:12px}
 .ns{background:var(--ns)}.ew{background:var(--ew)}
 #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 10px;border-radius:10px;font-weight:700;z-index:9}
-#timer{position:absolute;top:1%;right:2%;padding:4px 10px;border-radius:12px;background:#fff;color:#000;font-weight:700;display:none}
 #player-panel{position:absolute;inset:0;z-index:2;pointer-events:none}
 .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:6px 8px;border-radius:10px}
-.p.active{box-shadow:0 0 10px 2px var(--glow)}
 .av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;object-fit:cover}
 .south{left:50%;bottom:28%;transform:translateX(-50%)}.north{left:50%;top:5%;transform:translateX(-50%)}.east{right:4%;top:50%;transform:translateY(-50%)}.west{left:4%;top:50%;transform:translateY(-50%)}
 #hand{position:absolute;left:50%;bottom:.5%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw}
-.card{width:9.5vw;max-width:48px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation;outline:none}
+.card{width:9.5vw;max-width:48px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
 .card *{pointer-events:none}
 .card.legal{outline:2px solid var(--glow)}
 .card.legal:hover,.card.legal:active{transform:translateY(-4px)}
@@ -61,15 +59,13 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
   </div>
 </section>
 
-<section id="table" class="hidden" aria-live="polite">
+<section id="table" class="hidden">
   <div id="board">
     <div id="scoreboard">
       <div id="scoreNS" class="score ns">NS · Bid — · Tricks 0</div>
       <div id="scoreEW" class="score ew">EW · Bid — · Tricks 0</div>
     </div>
-    <div id="timer"></div>
     <div id="status"></div>
-
     <div id="player-panel">
       <div id="ps" class="p south"><img id="avs" class="av" alt="S"/><b>You</b></div>
       <div id="pe" class="p east"><img id="ave" class="av" alt="E"/><b>East</b></div>
@@ -84,58 +80,51 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 </section>
 
 <script>
-/* Viewport fix */
+/* Viewport fix for mobile */
 function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px');}
-setVh();addEventListener('resize',setVh);
+setVh();window.addEventListener('resize',setVh);
 
-/* Start buttons */
+/* Button listeners */
 document.getElementById('classicBtn').addEventListener('click',()=>startGame('classic'));
 document.getElementById('timedBtn').addEventListener('click',()=>startGame('timed'));
 
-/* Emoji avatars (reliable base64 SVG) */
+/* ✅ Fixed emoji avatars */
 function makeAvatar(emoji,color='#000'){
-  const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>
-  <circle cx='40' cy='40' r='38' fill='white' stroke='${color}' stroke-width='3'/>
-  <text x='40' y='55' font-size='40' text-anchor='middle'>${emoji}</text>
-  </svg>`;
-  return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
+  const svg=`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><circle cx='40' cy='40' r='38' fill='white' stroke='${color}' stroke-width='3'/><text x='40' y='55' font-size='40' text-anchor='middle'>${emoji}</text></svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 avs.src=makeAvatar('🙂','#22c55e');
 avn.src=makeAvatar('🧠','#22c55e');
 ave.src=makeAvatar('🤖','#ec4899');
 avw.src=makeAvatar('🦊','#ec4899');
 
-/* JJDD rules + gameplay (same as last working version) */
-const suits=['♠','♣','♦','♥'];
-const ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-const isJoker=c=>c.suit==='JOKER';
-const isTrump=c=> isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
-function trumpPower(c){if(isJoker(c))return c.rank==='BJ'?100:99;if(c.suit==='♦'&&c.rank==='2')return 98;if(c.suit==='♠'){if(c.rank==='2')return 97;return 50+ranks.indexOf(c.rank);}return -1;}
+/* --- GAME LOGIC --- */
+const suits=['♠','♣','♦','♥'], ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const isJoker=c=>c.suit==='JOKER', isTrump=c=>isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
 const cardVal=c=>ranks.indexOf(c.rank);
+function trumpPower(c){if(isJoker(c))return c.rank==='BJ'?100:99;if(c.suit==='♦'&&c.rank==='2')return 98;if(c.suit==='♠'){if(c.rank==='2')return 97;return 50+ranks.indexOf(c.rank);}return -1;}
 function effectiveSuit(c){if(isJoker(c))return null;if(c.suit==='♦'&&c.rank==='2')return'♠';return c.suit;}
 function buildDeck(){const d=[];for(const s of suits){for(const r of ranks)d.push({suit:s,rank:r});}['♣','♥'].forEach(s=>{const i=d.findIndex(c=>c.suit===s&&c.rank==='2');if(i>-1)d.splice(i,1);});d.push({suit:'JOKER',rank:'BJ'},{suit:'JOKER',rank:'LJ'});return d;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function suitColor(s){return s==='♥'||s==='♦'?'#e53e3e':'#111827';}
-function createCardSVG(card){const svgNS='http://www.w3.org/2000/svg';const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('viewBox','0 0 60 90');svg.classList.add('card');const rect=document.createElementNS(svgNS,'rect');rect.setAttribute('width','60');rect.setAttribute('height','90');rect.setAttribute('rx','10');rect.setAttribute('fill','#fff');rect.setAttribute('stroke','#cbd5e1');rect.setAttribute('stroke-width','2');const t=document.createElementNS(svgNS,'text');const s=document.createElementNS(svgNS,'text');const col=isJoker(card)?'#111827':suitColor(card.suit);t.setAttribute('x','10');t.setAttribute('y','23');t.setAttribute('font-weight','bold');t.textContent=isJoker(card)?(card.rank==='BJ'?'BJ':'LJ'):card.rank;t.setAttribute('fill',col);s.setAttribute('x','30');s.setAttribute('y','55');s.setAttribute('text-anchor','middle');s.setAttribute('fill',col);s.textContent=isJoker(card)?'🃏':card.suit;svg.append(rect,t,s);return svg;}
-const players=[];let current=0,leadSuit=null,trick=[],spadesBroken=false;let mode='classic',difficulty='normal';const scoreNS={bid:0,tricks:0,score:0,bags:0},scoreEW={bid:0,tricks:0,score:0,bags:0};let timerId=null,timeLeft=0;
-const handEl=document.getElementById('hand');const statusEl=document.getElementById('status');const nsEl=document.getElementById('scoreNS');const ewEl=document.getElementById('scoreEW');const metaS=document.getElementById('meta-s'),metaE=document.getElementById('meta-e'),metaN=document.getElementById('meta-n'),metaW=document.getElementById('meta-w');const slots={0:ts,1:te,2:tn,3:tw};const overlay=document.getElementById('overlay');const nameInput=document.getElementById('playerName');const diffSelect=document.getElementById('difficulty');
-function estimateBid(hand){let b=0;for(const c of hand){if(isJoker(c))b+=1.5;else if(c.suit==='♠'){const ri=ranks.indexOf(c.rank);b+=(c.rank==='2')?1.2:(ri>=10?1:(ri>=8?0.7:0.3));}else if(c.suit==='♦'&&c.rank==='2'){b+=1.1;}else if(ranks.indexOf(c.rank)>=10){b+=0.5;}}return Math.max(1,Math.round(b));}
-function deal(){const deck=shuffle(buildDeck());for(let i=0;i<4;i++)players[i]={hand:[],tricks:0,bid:0};for(let i=0;i<52;i++)players[i%4].hand.push(deck[i]);for(const p of players){p.hand.sort((a,b)=>(a.suit==='JOKER'?99:suits.indexOf(a.suit))-(b.suit==='JOKER'?99:suits.indexOf(b.suit))||ranks.indexOf(a.rank)-ranks.indexOf(b.rank));p.bid=estimateBid(p.hand);}scoreNS.bid=players[0].bid+players[2].bid;scoreEW.bid=players[1].bid+players[3].bid;metaS.textContent=`Bid ${players[0].bid}`;metaE.textContent=`Bid ${players[1].bid}`;metaN.textContent=`Bid ${players[2].bid}`;metaW.textContent=`Bid ${players[3].bid}`;}
-function firstPlayer(){for(const r of ['2','3','4']){for(let i=0;i<4;i++){if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r))return i;}}return 0;}
-function renderScores(){nsEl.textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks}`;ewEl.textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks}`;}
-function renderActive(){document.querySelectorAll('.p').forEach((el,i)=>el.classList.toggle('active',i===current));}
-function updateTrick(){Object.values(slots).forEach(s=>s.innerHTML='');trick.forEach(p=>slots[p.player].appendChild(createCardSVG(p.card)));}
+function createCardSVG(c){const n='http://www.w3.org/2000/svg';const s=document.createElementNS(n,'svg');s.setAttribute('viewBox','0 0 60 90');s.classList.add('card');const r=document.createElementNS(n,'rect');r.setAttribute('width','60');r.setAttribute('height','90');r.setAttribute('rx','10');r.setAttribute('fill','#fff');r.setAttribute('stroke','#cbd5e1');const t=document.createElementNS(n,'text');t.setAttribute('x','10');t.setAttribute('y','25');t.setAttribute('font-weight','bold');t.setAttribute('fill',suitColor(c.suit));t.textContent=isJoker(c)?(c.rank==='BJ'?'BJ':'LJ'):c.rank;const sym=document.createElementNS(n,'text');sym.setAttribute('x','30');sym.setAttribute('y','55');sym.setAttribute('text-anchor','middle');sym.setAttribute('fill',suitColor(c.suit));sym.textContent=isJoker(c)?'🃏':c.suit;s.append(r,t,sym);return s;}
+const players=[],scoreNS={bid:0,tricks:0,score:0},scoreEW={bid:0,tricks:0,score:0};let current=0,leadSuit=null,trick=[],spadesBroken=false,mode='classic',difficulty='normal';
+function estimateBid(h){let b=0;for(const c of h){if(isJoker(c))b+=1.5;else if(c.suit==='♠'){const ri=ranks.indexOf(c.rank);b+=(c.rank==='2')?1.2:(ri>=10?1:(ri>=8?0.7:0.3));}else if(c.suit==='♦'&&c.rank==='2')b+=1.1;else if(ranks.indexOf(c.rank)>=10)b+=0.5;}return Math.max(1,Math.round(b));}
+function deal(){const d=shuffle(buildDeck());for(let i=0;i<4;i++)players[i]={hand:[],tricks:0,bid:0};for(let i=0;i<52;i++)players[i%4].hand.push(d[i]);for(const p of players){p.hand.sort((a,b)=>(a.suit==='JOKER'?99:suits.indexOf(a.suit))-(b.suit==='JOKER'?99:suits.indexOf(b.suit))||ranks.indexOf(a.rank)-ranks.indexOf(b.rank));p.bid=estimateBid(p.hand);}scoreNS.bid=players[0].bid+players[2].bid;scoreEW.bid=players[1].bid+players[3].bid;}
+function firstPlayer(){for(const r of ['2','3','4'])for(let i=0;i<4;i++)if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r))return i;return 0;}
+function renderScores(){scoreNS.tricks=scoreNS.tricks||0;scoreEW.tricks=scoreEW.tricks||0;document.getElementById('scoreNS').textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks}`;document.getElementById('scoreEW').textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks}`;}
+function renderActive(){document.querySelectorAll('.p').forEach((e,i)=>e.classList.toggle('active',i===current));}
+function updateTrick(){[ts,te,tn,tw].forEach(s=>s.innerHTML='');trick.forEach(p=>({0:ts,1:te,2:tn,3:tw}[p.player].appendChild(createCardSVG(p.card))));}
 function status(){statusEl.textContent=(current===0?'Your turn':'AI')+' · '+(leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));}
-function legalMoves(hand){if(current!==0)return[];if(!leadSuit){const onlyTr=hand.every(isTrump);return hand.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);}const has=hand.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);return hand.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);}
-function showHand(){handEl.innerHTML='';const h=players[0].hand;const legal=legalMoves(h);h.forEach((c,idx)=>{const el=createCardSVG(c);if(legal.includes(idx))el.classList.add('legal');const handler=()=>{if(current!==0)return;if(!legal.includes(idx)){alert(`Must follow ${leadSuit||'non-trump'}`);return;}play(0,idx);};el.addEventListener('click',handler,{passive:true});handEl.appendChild(el);});}
+function legalMoves(h){if(current!==0)return[];if(!leadSuit){const onlyTr=h.every(isTrump);return h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);}const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);return h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);}
+function showHand(){hand.innerHTML='';const h=players[0].hand;const legal=legalMoves(h);h.forEach((c,i)=>{const e=createCardSVG(c);if(legal.includes(i))e.classList.add('legal');e.onclick=()=>{if(current!==0)return;if(!legal.includes(i)){alert('Must follow suit');return;}play(0,i);};hand.append(e);});}
 function cmp(a,b,lead){const at=isTrump(a),bt=isTrump(b);if(at||bt)return(at?trumpPower(a):-1)-(bt?trumpPower(b):-1);const as=effectiveSuit(a),bs=effectiveSuit(b);if(as===bs)return cardVal(a)-cardVal(b);if(as===lead)return 1;if(bs===lead)return-1;return 0;}
-function play(pi,hi){const c=players[pi].hand.splice(hi,1)[0];trick.push({player:pi,card:c});if(!leadSuit){leadSuit=isJoker(c)?null:effectiveSuit(c);if(isTrump(c))spadesBroken=true;}else if(isTrump(c))spadesBroken=true;updateTrick();current=(current+1)%4;renderActive();showHand();status();if(trick.length<4){if(current!==0)setTimeout(ai,400);}else setTimeout(resolve,700);}
-function ai(){const p=current,h=players[p].hand;let legal;if(!leadSuit){const onlyTr=h.every(isTrump);legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);}else{const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);}if(!legal.length)legal=h.map((_,i)=>i);const lvl=difficulty;let pick;const wins=legal.filter(i=>{const t={player:p,card:h[i]};let w=trick[0]||t;const seq=trick.length?trick.concat([t]):[t];for(const pl of seq){if(cmp(pl.card,w.card,leadSuit)>0)w=pl;}return w.player===p;});if(lvl==='hard')pick=wins.length?wins.sort((i,j)=>trumpPower(h[i])-trumpPower(h[j]))[0]:legal.sort((i,j)=>cardVal(h[i])-cardVal(h[j]))[0];else if(lvl==='easy'){if(Math.random()<0.3&&wins.length)pick=wins[Math.floor(Math.random()*wins.length)];else pick=legal.sort((i,j)=>cardVal(h[i])-cardVal(h[j]))[0];}else pick=wins.length?wins.sort((i,j)=>cardVal(h[i])-cardVal(h[j]))[0]:legal.sort((i,j)=>cardVal(h[i])-cardVal(h[j]))[0];play(p,pick);}
-function resolve(){let win=trick[0];for(const p of trick.slice(1)){if(cmp(p.card,win.card,leadSuit)>0)win=p;}const w=win.player;const pile=(w%2===0)?document.getElementById('pile-south'):document.getElementById('pile-east');const d=document.createElement('div');d.className='mini';d.style.marginTop=pile.children.length?'-10px':'0';pile.appendChild(d);players[w].tricks++;if(w%2===0)scoreNS.tricks++;else scoreEW.tricks++;leadSuit=null;trick=[];current=w;renderScores();updateTrick();renderActive();status();if(players[0].hand.length===0)endHand();else{if(current!==0)setTimeout(ai,650);showHand();}}
-function scoreHand(){const nsMade=scoreNS.tricks>=scoreNS.bid;const ewMade=scoreEW.tricks>=scoreEW.bid;let nsGain=nsMade?scoreNS.bid*10+(scoreNS.tricks-scoreNS.bid):-scoreNS.bid*10;let ewGain=ewMade?scoreEW.bid*10+(scoreEW.tricks-scoreEW.bid):-scoreEW.bid*10;scoreNS.score+=nsGain;scoreEW.score+=ewGain;return{nsGain,ewGain};}
-function endHand(){const ns=scoreNS.tricks,ew=scoreEW.tricks;const result=ns>ew?`NS wins (${ns}-${ew})`:ew>ns?`EW wins (${ew}-${ns})`:`Tie (${ns}-${ew})`;const{nsGain,ewGain}=scoreHand();overlay.innerHTML=`<div class='win'><b>${result}</b><br>Scores: NS ${nsGain>=0?'+':''}${nsGain}, EW ${ewGain>=0?'+':''}${ewGain}</div><button id='next' class='btn btn-primary'>Next Hand</button><button id='home' class='btn btn-secondary'>Home</button>`;overlay.style.display='flex';next.onclick=()=>{overlay.style.display='none';startGame(mode);};home.onclick=()=>{overlay.style.display='none';goHome();};}
-function goHome(){document.getElementById('table').classList.add('hidden');document.getElementById('welcome').classList.remove('hidden');}
-function startGame(m){mode=m;document.getElementById('pile-south').innerHTML='';document.getElementById('pile-east').innerHTML='';scoreNS.tricks=scoreEW.tricks=0;leadSuit=null;trick=[];spadesBroken=false;deal();current=firstPlayer();document.getElementById('welcome').classList.add('hidden');document.getElementById('table').classList.remove('hidden');difficulty=diffSelect.value;renderScores();renderActive();updateTrick();showHand();status();if(current!==0)setTimeout(ai,600);}
+function play(pi,hi){const c=players[pi].hand.splice(hi,1)[0];trick.push({player:pi,card:c});if(!leadSuit){leadSuit=isJoker(c)?null:effectiveSuit(c);if(isTrump(c))spadesBroken=true;}else if(isTrump(c))spadesBroken=true;updateTrick();current=(current+1)%4;renderActive();showHand();status();if(trick.length<4){if(current!==0)setTimeout(ai,500);}else setTimeout(resolve,700);}
+function ai(){const p=current,h=players[p].hand;let legal;if(!leadSuit){const onlyTr=h.every(isTrump);legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);}else{const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);}if(!legal.length)legal=h.map((_,i)=>i);const pick=legal[Math.floor(Math.random()*legal.length)];play(p,pick);}
+function resolve(){let win=trick[0];for(const p of trick.slice(1)){if(cmp(p.card,win.card,leadSuit)>0)win=p;}const w=win.player;if(w%2===0)scoreNS.tricks++;else scoreEW.tricks++;leadSuit=null;trick=[];current=w;renderScores();updateTrick();renderActive();status();if(players[0].hand.length===0)endHand();else{if(current!==0)setTimeout(ai,700);showHand();}}
+function endHand(){const ns=scoreNS.tricks,ew=scoreEW.tricks;const r=ns>ew?'NS win':(ew>ns?'EW win':'Tie');overlay.innerHTML=`<div><b>${r}</b><br>NS ${ns} - EW ${ew}</div><button id='nxt' class='btn btn-primary'>Next</button><button id='home' class='btn btn-secondary'>Home</button>`;overlay.style.display='flex';nxt.onclick=()=>{overlay.style.display='none';startGame(mode);};home.onclick=()=>{overlay.style.display='none';goHome();};}
+function goHome(){table.classList.add('hidden');welcome.classList.remove('hidden');}
+function startGame(m){mode=m;scoreNS.tricks=scoreEW.tricks=0;leadSuit=null;trick=[];spadesBroken=false;deal();current=firstPlayer();welcome.classList.add('hidden');table.classList.remove('hidden');renderScores();renderActive();updateTrick();showHand();status();if(current!==0)setTimeout(ai,600);}
 </script>
 </body>
 </html>
