@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>Spades Diagnostic — iPhone Test</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#0a5a2b;color:#fff;font-family:-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  button{font-size:1.2rem;padding:12px 20px;border:none;border-radius:12px;background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff;font-weight:700;margin:10px;cursor:pointer}
+  #log{margin-top:20px;text-align:left;width:90%;max-width:600px;background:#1119;padding:10px;border-radius:10px;overflow:auto;max-height:40vh;font-family:monospace;font-size:.9rem}
+</style>
+</head>
+<body>
+<h1>♠️ Spades Diagnostic</h1>
+<p>This test checks if Safari/iPhone can handle touch events and JS startup.</p>
+<button id="classic">Start Classic Mode</button>
+<button id="timed">Start Timed Mode</button>
+<div id="status">Waiting for tap...</div>
+<pre id="log"></pre>
+<script>
+const logEl=document.getElementById('log');
+function log(msg){ logEl.textContent += msg+"\n"; console.log(msg); }
+function startGame(mode){
+  document.body.style.background="#086b33";
+  document.getElementById('status').textContent="Game started in "+mode+" mode!";
+  log("✅ startGame("+mode+") triggered at "+new Date().toLocaleTimeString());
+  try{
+    // create a test deck
+    const suits=['♠','♣','♦','♥'];
+    const deck=[]; for(let s of suits){ for(let r=2;r<=14;r++){ deck.push({suit:s,rank:r}); } }
+    log("Deck size: "+deck.length);
+    // simulate dealing
+    const hands=[[],[],[],[]];
+    for(let i=0;i<52;i++) hands[i%4].push(deck[i]);
+    log("Hands: "+hands.map(h=>h.length).join(','));
+    document.getElementById('status').textContent += " | Cards dealt successfully.";
+  }catch(e){ log("❌ Error: "+e.message); document.getElementById('status').textContent="Error: "+e.message; }
+}
+document.getElementById('classic').addEventListener('click',()=>startGame('classic'));
+document.getElementById('timed').addEventListener('click',()=>startGame('timed'));
+window.onerror=function(m,s,l,c,e){log("❌ Global error: "+m+" at "+l);}
+log("JS loaded OK.");
+</script>
+</body>
+</html>
