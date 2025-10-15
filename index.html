@@ -10,7 +10,7 @@
 <title>Spades Tournament</title>
 <style>
 /* Base theme */
-:root{--felt:#0a5a2b;--felt2:#086b33;--paper:#0a5a2b;--ns:#22c55e;--ew:#ec4899;--glow:#00e1ff;--vh:1vh}
+:root{--felt:#0a5a2b;--felt2:#086b33;--paper:#0a5a2b;--ns:#22c55e;--ew:#ffffff;--glow:#00e1ff;--vh:1vh}
 html,body{height:calc(var(--vh)*100);margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--paper);color:#fff;touch-action:manipulation;overflow:hidden}
 .hidden{display:none!important}
 
@@ -29,9 +29,14 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 #board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px}
 
 /* Score & status */
-#scoreboard{position:absolute;top:1%;left:2%;display:flex;flex-direction:column;gap:4px;z-index:10;font-weight:700}
+#scoreboard{
+  position:absolute;top:1%;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 2%;z-index:10;font-weight:700;gap:0
+}
 .score{padding:6px 10px;border-radius:12px}
-.ns{background:var(--ns)}.ew{background:var(--ew)}
+.ns{background:var(--ns);color:#fff}
+.ew{background:var(--ew);color:#111} /* white box on right */
 #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 10px;border-radius:10px;font-weight:700;z-index:9}
 
 /* Players & avatars */
@@ -45,12 +50,12 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 
 /* Hand (your cards at bottom) */
 #hand{
-  position:absolute;left:50%;bottom:.5%;transform:translateX(-50%);
+  position:absolute;left:50%;bottom:0%;transform:translateX(-50%);
   display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw
 }
 
 /* Card visuals */
-.card{width:9.5vw;max-width:48px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
+.card{width:10vw;max-width:40px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
 .card *{pointer-events:none}
 .card.legal{outline:2px solid var(--glow)}
 .card.legal:hover,.card.legal:active{transform:translateY(-4px)}
@@ -70,18 +75,23 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 /* Overlay */
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:100;text-align:center;padding:1rem}
 
-/* ======== MOBILE LAYOUT FIX ========
-   Move avatar a bit up and keep cards lower,
-   respecting iOS/Android safe-area. */
+/* ======== MOBILE LAYOUT TWEAKS ========
+   Score boxes opposite sides; move bottom three emojis up slightly.
+   Do NOT raise the cards any higher than they already are. */
 @media (max-width: 600px) {
-  .south { bottom: 32%; } /* emoji sits higher */
-  /* keep trick slot as-is so mid-table remains consistent */
+  /* Score: already opposite using flex; ensure spacing is tight on small screens */
+  #scoreboard { padding: 0 3%; }
 
-  #hand {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 0%); /* cards lower (under emoji) */
-  }
+  /* Move the three lower emojis (south, east, west) up a tad */
+  .south { bottom: 35%; } /* was 28% */
+  .east  { top: 46%; }    /* was 50% */
+  .west  { top: 46%; }    /* was 50% */
 
-  .card { width: 10vw; max-width: 40px; } /* slightly smaller for tight phones */
+  /* Keep cards at current level (don’t move higher) */
+  #hand { bottom: 0%; }
+
+  /* Slightly smaller cards helps avoid overlap on short phones */
+  .card { width: 9.5vw; max-width: 38px; }
 }
 </style>
 </head>
@@ -176,8 +186,8 @@ function makeAvatar(emoji,color='#000'){
 }
 avs.src=makeAvatar('🙂','#22c55e');
 avn.src=makeAvatar('🧠','#22c55e');
-ave.src=makeAvatar('🤖','#ec4899');
-avw.src=makeAvatar('🦊','#ec4899');
+ave.src=makeAvatar('🤖','#000');  // white box contrast
+avw.src=makeAvatar('🦊','#000');  // white box contrast
 
 /* ===== JJDD rules core ===== */
 const suits=['♠','♣','♦','♥'], ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
