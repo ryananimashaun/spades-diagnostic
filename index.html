@@ -9,10 +9,12 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♠️</text></svg>">
 <title>Spades Tournament</title>
 <style>
-/* (unchanged CSS from your last version) */
-:root{--felt:#0a5a2b;--felt2:#086b33;--paper:#0a5a2b;--ns:#22c55e;--ew:#ec4899;--glow:#00e1ff;--vh:1vh}
+/* Base theme */
+:root{--felt:#0a5a2b;--felt2:#086b33;--paper:#0a5a2b;--ns:#22c55e;--ew:#ffffff;--glow:#00e1ff;--vh:1vh}
 html,body{height:calc(var(--vh)*100);margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--paper);color:#fff;touch-action:manipulation;overflow:hidden}
 .hidden{display:none!important}
+
+/* Welcome screen */
 #welcome{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#0f2027 0%,#203a43 55%,#2c5364 100%);padding:2rem}
 .hero{max-width:480px;width:100%;background:#fff;border-radius:20px;color:#0b1220;text-align:center;padding:24px;box-shadow:0 0 30px rgba(0,0,0,.3)}
 .title{font-size:2rem;margin:0;background:linear-gradient(90deg,#0ea5e9,#8b5cf6,#ef4444,#22c55e);-webkit-background-clip:text;color:transparent}
@@ -21,27 +23,76 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
 .btn{padding:12px 20px;border:none;border-radius:18px;font-weight:800;cursor:pointer;margin:6px}
 .btn-primary{background:linear-gradient(90deg,#00e1ff,#a855f7);color:#fff}
 .btn-secondary{background:#e2e8f0;color:#111}
+
+/* Table/board */
 #table{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(1000px 600px at 50% 55%,var(--felt2),var(--felt))}
 #board{position:relative;width:100%;height:100%;max-width:1100px;max-height:760px}
-#scoreboard{position:absolute;top:1%;left:2%;display:flex;flex-direction:column;gap:4px;z-index:10;font-weight:700}
+
+/* Score & status */
+#scoreboard{
+  position:absolute;top:1%;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 2%;z-index:10;font-weight:700;gap:0
+}
 .score{padding:6px 10px;border-radius:12px}
-.ns{background:var(--ns)}.ew{background:var(--ew)}
+.ns{background:var(--ns);color:#fff}
+.ew{background:var(--ew);color:#111} /* white box on right */
 #status{position:absolute;top:1%;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:4px 10px;border-radius:10px;font-weight:700;z-index:9}
+
+/* Players & avatars */
 #player-panel{position:absolute;inset:0;z-index:2;pointer-events:none}
 .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.2);padding:6px 8px;border-radius:10px}
 .av{width:44px;height:44px;border-radius:50%;border:2px solid #fff;object-fit:cover}
-.south{left:50%;bottom:28%;transform:translateX(-50%)}.north{left:50%;top:5%;transform:translateX(-50%)}.east{right:4%;top:50%;transform:translateY(-50%)}.west{left:4%;top:50%;transform:translateY(-50%)}
-#hand{position:absolute;left:50%;bottom:.5%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw}
-.card{width:9.5vw;max-width:48px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
+.south{left:50%;bottom:28%;transform:translateX(-50%)} /* player */
+.north{left:50%;top:5%;transform:translateX(-50%)}
+.east{right:4%;top:50%;transform:translateY(-50%)}
+.west{left:4%;top:50%;transform:translateY(-50%)}
+
+/* Hand (your cards at bottom) */
+#hand{
+  position:absolute;left:50%;bottom:0%;transform:translateX(-50%);
+  display:flex;gap:4px;flex-wrap:wrap;justify-content:center;z-index:50;max-width:94vw
+}
+
+/* Card visuals */
+.card{width:10vw;max-width:40px;aspect-ratio:2/3;border-radius:8px;cursor:pointer;user-select:none;transition:transform .15s ease;pointer-events:auto;display:block;touch-action:manipulation}
 .card *{pointer-events:none}
 .card.legal{outline:2px solid var(--glow)}
 .card.legal:hover,.card.legal:active{transform:translateY(-4px)}
+
+/* Trick slots (center) */
 .slot{position:absolute;width:10vw;max-width:56px;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;z-index:4}
-.slot.south{left:50%;bottom:36%;transform:translateX(-50%)}.slot.north{left:50%;top:20%;transform:translateX(-50%)}.slot.east{right:20%;top:50%;transform:translateY(-50%)}.slot.west{left:20%;top:50%;transform:translateY(-50%)}
+.slot.south{left:50%;bottom:36%;transform:translateX(-50%)}
+.slot.north{left:50%;top:20%;transform:translateX(-50%)}
+.slot.east{right:20%;top:50%;transform:translateY(-50%)}
+.slot.west{left:20%;top:50%;transform:translateY(-50%)}
+
+/* Piles (books) */
 .pile{position:absolute;width:22px;height:110px;display:flex;flex-direction:column;gap:2px}
-#pile-south{left:6%;bottom:6%}#pile-east{right:6%;bottom:6%}
+#pile-south{left:6%;bottom:6%} #pile-east{right:6%;bottom:6%}
 .mini{width:18px;height:24px;border-radius:4px;background:#ddd}
+
+/* Overlay */
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:100;text-align:center;padding:1rem}
+
+/* ======== MOBILE LAYOUT TWEAKS ========
+   Score boxes opposite sides; move bottom three emojis up slightly.
+   Do NOT raise the cards any higher than they already are. */
+@media (max-width: 600px) {
+  /* Score: already opposite using flex; ensure spacing is tight on small screens */
+  #scoreboard { padding: 0 3%; }
+
+  /* Move the three lower emojis (south, east, west) up a tad */
+  .south { bottom: 35%; } /* was 28% */
+  .east  { top: 46%; }    /* was 50% */
+  .west  { top: 46%; }    /* was 50% */
+
+  /* Keep cards at current level (don’t move higher) */
+  #hand { bottom: 0%; }
+
+  /* Slightly smaller cards helps avoid overlap on short phones */
+  .card { width: 9.5vw; max-width: 38px; }
+}
 </style>
 </head>
 <body>
@@ -52,7 +103,11 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
     <div class="form">
       <label>Player Name <input id="playerName" placeholder="You"></label>
       <label>Difficulty
-        <select id="difficulty"><option value="easy">Easy</option><option selected value="normal">Normal</option><option value="hard">Hard</option></select>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option selected value="normal">Normal</option>
+          <option value="hard">Hard</option>
+        </select>
       </label>
     </div>
     <button id="classicBtn" class="btn btn-primary">Classic Mode</button>
@@ -67,25 +122,37 @@ input,select{padding:10px;border-radius:12px;border:1px solid #cbd5e1}
       <div id="scoreEW" class="score ew">EW · Bid — · Tricks 0</div>
     </div>
     <div id="status"></div>
+
     <div id="player-panel">
-      <div id="ps" class="p south"><img id="avs" class="av" alt="S"/><b>You</b></div>
-      <div id="pe" class="p east"><img id="ave" class="av" alt="E"/><b>East</b></div>
-      <div id="pn" class="p north"><img id="avn" class="av" alt="N"/><b>North</b></div>
-      <div id="pw" class="p west"><img id="avw" class="av" alt="W"/><b>West</b></div>
+      <div id="ps" class="p south"><img id="avs" class="av" alt="S"><b>You</b></div>
+      <div id="pe" class="p east"><img id="ave" class="av" alt="E"><b>East</b></div>
+      <div id="pn" class="p north"><img id="avn" class="av" alt="N"><b>North</b></div>
+      <div id="pw" class="p west"><img id="avw" class="av" alt="W"><b>West</b></div>
     </div>
-    <div id="ts" class="slot south"></div><div id="te" class="slot east"></div><div id="tn" class="slot north"></div><div id="tw" class="slot west"></div>
+
+    <div id="ts" class="slot south"></div>
+    <div id="te" class="slot east"></div>
+    <div id="tn" class="slot north"></div>
+    <div id="tw" class="slot west"></div>
+
     <div id="hand"></div>
-    <div id="pile-south" class="pile"></div><div id="pile-east" class="pile"></div>
+
+    <div id="pile-south" class="pile"></div>
+    <div id="pile-east" class="pile"></div>
   </div>
+
   <div id="overlay"></div>
 </section>
 
 <script>
-/* ===== viewport fix ===== */
-function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px');}
-setVh();window.addEventListener('resize',setVh);
+/* ===== viewport height fix for mobile ===== */
+function setVh(){
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+}
+setVh();
+window.addEventListener('resize', setVh);
 
-/* ===== element refs (explicit — no browser globals) ===== */
+/* ===== element refs ===== */
 const welcomeEl = document.getElementById('welcome');
 const tableEl   = document.getElementById('table');
 const handEl    = document.getElementById('hand');
@@ -112,40 +179,100 @@ const avw = document.getElementById('avw');
 document.getElementById('classicBtn').addEventListener('click',()=>startGame('classic'));
 document.getElementById('timedBtn' ).addEventListener('click',()=>startGame('timed'));
 
-/* ===== emoji avatars (utf8 data-uri) ===== */
+/* ===== emoji avatars (inline SVG data-URIs) ===== */
 function makeAvatar(emoji,color='#000'){
   const svg=`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><circle cx='40' cy='40' r='38' fill='white' stroke='${color}' stroke-width='3'/><text x='40' y='55' font-size='40' text-anchor='middle'>${emoji}</text></svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 }
 avs.src=makeAvatar('🙂','#22c55e');
 avn.src=makeAvatar('🧠','#22c55e');
-ave.src=makeAvatar('🤖','#ec4899');
-avw.src=makeAvatar('🦊','#ec4899');
+ave.src=makeAvatar('🤖','#000');  // white box contrast
+avw.src=makeAvatar('🦊','#000');  // white box contrast
 
-/* ===== JJDD logic (unchanged) ===== */
+/* ===== JJDD rules core ===== */
 const suits=['♠','♣','♦','♥'], ranks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-const isJoker=c=>c.suit==='JOKER', isTrump=c=>isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
+const isJoker=c=>c.suit==='JOKER';
+const isTrump=c=>isJoker(c)||c.suit==='♠'||(c.suit==='♦'&&c.rank==='2');
 const cardVal=c=>ranks.indexOf(c.rank);
-function trumpPower(c){if(isJoker(c))return c.rank==='BJ'?100:99;if(c.suit==='♦'&&c.rank==='2')return 98;if(c.suit==='♠'){if(c.rank==='2')return 97;return 50+ranks.indexOf(c.rank);}return -1;}
-function effectiveSuit(c){if(isJoker(c))return null;if(c.suit==='♦'&&c.rank==='2')return'♠';return c.suit;}
-function buildDeck(){const d=[];for(const s of suits){for(const r of ranks)d.push({suit:s,rank:r});}['♣','♥'].forEach(s=>{const i=d.findIndex(c=>c.suit===s&&c.rank==='2');if(i>-1)d.splice(i,1);});d.push({suit:'JOKER',rank:'BJ'},{suit:'JOKER',rank:'LJ'});return d;}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function suitColor(s){return s==='♥'||s==='♦'?'#e53e3e':'#111827';}
-function createCardSVG(c){const n='http://www.w3.org/2000/svg';const s=document.createElementNS(n,'svg');s.setAttribute('viewBox','0 0 60 90');s.classList.add('card');const r=document.createElementNS(n,'rect');r.setAttribute('width','60');r.setAttribute('height','90');r.setAttribute('rx','10');r.setAttribute('fill','#fff');r.setAttribute('stroke','#cbd5e1');const t=document.createElementNS(n,'text');t.setAttribute('x','10');t.setAttribute('y','25');t.setAttribute('font-weight','bold');t.setAttribute('fill',suitColor(c.suit));t.textContent=isJoker(c)?(c.rank==='BJ'?'BJ':'LJ'):c.rank;const sym=document.createElementNS(n,'text');sym.setAttribute('x','30');sym.setAttribute('y','55');sym.setAttribute('text-anchor','middle');sym.setAttribute('fill',suitColor(c.suit));sym.textContent=isJoker(c)?'🃏':c.suit;s.append(r,t,sym);return s;}
+function trumpPower(c){
+  if(isJoker(c))return c.rank==='BJ'?100:99;
+  if(c.suit==='♦'&&c.rank==='2')return 98;
+  if(c.suit==='♠'){ if(c.rank==='2')return 97; return 50+ranks.indexOf(c.rank); }
+  return -1;
+}
+function effectiveSuit(c){
+  if(isJoker(c))return null;
+  if(c.suit==='♦'&&c.rank==='2')return '♠';
+  return c.suit;
+}
+function buildDeck(){
+  const d=[];
+  for(const s of suits){ for(const r of ranks) d.push({suit:s,rank:r}); }
+  ['♣','♥'].forEach(s=>{
+    const i=d.findIndex(c=>c.suit===s&&c.rank==='2');
+    if(i>-1) d.splice(i,1);
+  });
+  d.push({suit:'JOKER',rank:'BJ'},{suit:'JOKER',rank:'LJ'});
+  return d;
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function suitColor(s){ return s==='♥'||s==='♦' ? '#e53e3e' : '#111827'; }
+function createCardSVG(c){
+  const n='http://www.w3.org/2000/svg';
+  const s=document.createElementNS(n,'svg'); s.setAttribute('viewBox','0 0 60 90'); s.classList.add('card');
+  const r=document.createElementNS(n,'rect'); r.setAttribute('width','60'); r.setAttribute('height','90'); r.setAttribute('rx','10'); r.setAttribute('fill','#fff'); r.setAttribute('stroke','#cbd5e1');
+  const t=document.createElementNS(n,'text'); t.setAttribute('x','10'); t.setAttribute('y','25'); t.setAttribute('font-weight','bold'); t.setAttribute('fill',suitColor(c.suit)); t.textContent=isJoker(c)?(c.rank==='BJ'?'BJ':'LJ'):c.rank;
+  const sym=document.createElementNS(n,'text'); sym.setAttribute('x','30'); sym.setAttribute('y','55'); sym.setAttribute('text-anchor','middle'); sym.setAttribute('fill',suitColor(c.suit)); sym.textContent=isJoker(c)?'🃏':c.suit;
+  s.append(r,t,sym);
+  return s;
+}
 
-/* state */
-const players=[],scoreNS={bid:0,tricks:0,score:0},scoreEW={bid:0,tricks:0,score:0};
-let current=0,leadSuit=null,trick=[],spadesBroken=false,mode='classic',difficulty='normal';
+/* ===== state ===== */
+const players=[], scoreNS={bid:0,tricks:0,score:0}, scoreEW={bid:0,tricks:0,score:0};
+let current=0, leadSuit=null, trick=[], spadesBroken=false, mode='classic', difficulty='normal';
 
-/* engine */
-function estimateBid(h){let b=0;for(const c of h){if(isJoker(c))b+=1.5;else if(c.suit==='♠'){const ri=ranks.indexOf(c.rank);b+=(c.rank==='2')?1.2:(ri>=10?1:(ri>=8?0.7:0.3));}else if(c.suit==='♦'&&c.rank==='2')b+=1.1;else if(ranks.indexOf(c.rank)>=10)b+=0.5;}return Math.max(1,Math.round(b));}
-function deal(){const d=shuffle(buildDeck());for(let i=0;i<4;i++)players[i]={hand:[],tricks:0,bid:0};for(let i=0;i<52;i++)players[i%4].hand.push(d[i]);for(const p of players){p.hand.sort((a,b)=>(a.suit==='JOKER'?99:suits.indexOf(a.suit))-(b.suit==='JOKER'?99:suits.indexOf(b.suit))||ranks.indexOf(a.rank)-ranks.indexOf(b.rank));p.bid=estimateBid(p.hand);}scoreNS.bid=players[0].bid+players[2].bid;scoreEW.bid=players[1].bid+players[3].bid;}
-function firstPlayer(){for(const r of ['2','3','4'])for(let i=0;i<4;i++)if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r))return i;return 0;}
-function renderScores(){nsEl.textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks||0}`;ewEl.textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks||0}`;}
-function renderActive(){document.querySelectorAll('.p').forEach((e,i)=>e.classList.toggle('active',i===current));}
-function updateTrick(){Object.values(slots).forEach(s=>s.innerHTML='');trick.forEach(p=>slots[p.player].appendChild(createCardSVG(p.card)));}
-function status(){statusEl.textContent=(current===0?'Your turn':'AI')+' · '+(leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));}
-
+/* ===== engine ===== */
+function estimateBid(h){
+  let b=0;
+  for(const c of h){
+    if(isJoker(c)) b+=1.5;
+    else if(c.suit==='♠'){
+      const ri=ranks.indexOf(c.rank);
+      b+=(c.rank==='2')?1.2:(ri>=10?1:(ri>=8?0.7:0.3));
+    } else if(c.suit==='♦'&&c.rank==='2') b+=1.1;
+    else if(ranks.indexOf(c.rank)>=10) b+=0.5;
+  }
+  return Math.max(1,Math.round(b));
+}
+function deal(){
+  const d=shuffle(buildDeck());
+  for(let i=0;i<4;i++) players[i]={hand:[],tricks:0,bid:0};
+  for(let i=0;i<52;i++) players[i%4].hand.push(d[i]);
+  for(const p of players){
+    p.hand.sort((a,b)=>(a.suit==='JOKER'?99:suits.indexOf(a.suit))-(b.suit==='JOKER'?99:suits.indexOf(b.suit))||ranks.indexOf(a.rank)-ranks.indexOf(b.rank));
+    p.bid=estimateBid(p.hand);
+  }
+  scoreNS.bid=players[0].bid+players[2].bid;
+  scoreEW.bid=players[1].bid+players[3].bid;
+}
+function firstPlayer(){
+  for(const r of ['2','3','4']) for(let i=0;i<4;i++) if(players[i].hand.some(c=>c.suit==='♣'&&c.rank===r)) return i;
+  return 0;
+}
+function renderScores(){
+  nsEl.textContent=`NS · Bid ${scoreNS.bid} · Tricks ${scoreNS.tricks||0}`;
+  ewEl.textContent=`EW · Bid ${scoreEW.bid} · Tricks ${scoreEW.tricks||0}`;
+}
+function renderActive(){
+  document.querySelectorAll('.p').forEach((e,i)=>e.classList.toggle('active',i===current));
+}
+function updateTrick(){
+  Object.values(slots).forEach(s=>s.innerHTML='');
+  trick.forEach(p=>slots[p.player].appendChild(createCardSVG(p.card)));
+}
+function status(){
+  statusEl.textContent=(current===0?'Your turn':'AI')+' · '+(leadSuit?`follow ${leadSuit}`:(spadesBroken?'lead any':'lead non-trump'));
+}
 function legalMoves(h){
   if(current!==0) return [];
   if(!leadSuit){
@@ -155,7 +282,6 @@ function legalMoves(h){
   const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
   return h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
 }
-
 function showHand(){
   handEl.innerHTML='';
   const h=players[0].hand; const legal=legalMoves(h);
@@ -170,7 +296,6 @@ function showHand(){
     handEl.appendChild(e);
   });
 }
-
 function cmp(a,b,lead){
   const at=isTrump(a), bt=isTrump(b);
   if(at||bt) return (at?trumpPower(a):-1)-(bt?trumpPower(b):-1);
@@ -179,29 +304,34 @@ function cmp(a,b,lead){
   if(as===lead) return 1; if(bs===lead) return -1;
   return 0;
 }
-
 function play(pi,hi){
   const c=players[pi].hand.splice(hi,1)[0];
   trick.push({player:pi,card:c});
-  if(!leadSuit){ leadSuit=isJoker(c)?null:effectiveSuit(c); if(isTrump(c)) spadesBroken=true; }
-  else if(isTrump(c)) spadesBroken=true;
+  if(!leadSuit){
+    leadSuit=isJoker(c)?null:effectiveSuit(c);
+    if(isTrump(c)) spadesBroken=true;
+  } else if(isTrump(c)) spadesBroken=true;
 
   updateTrick();
   current=(current+1)%4; renderActive(); showHand(); status();
-  if(trick.length<4){ if(current!==0) setTimeout(ai,500); }
-  else setTimeout(resolve,700);
+  if(trick.length<4){
+    if(current!==0) setTimeout(ai,500);
+  } else setTimeout(resolve,700);
 }
-
 function ai(){
   const p=current, h=players[p].hand;
   let legal;
-  if(!leadSuit){ const onlyTr=h.every(isTrump); legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null); }
-  else { const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit); legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null); }
+  if(!leadSuit){
+    const onlyTr=h.every(isTrump);
+    legal=h.map((c,i)=>(spadesBroken||onlyTr||!isTrump(c))?i:null).filter(i=>i!==null);
+  } else {
+    const has=h.some(c=>!isJoker(c)&&effectiveSuit(c)===leadSuit);
+    legal=h.map((c,i)=>(!has||(!isJoker(c)&&effectiveSuit(c)===leadSuit))?i:null).filter(i=>i!==null);
+  }
   if(!legal.length) legal=h.map((_,i)=>i);
   const pick=legal[Math.floor(Math.random()*legal.length)];
   play(p,pick);
 }
-
 function resolve(){
   let win=trick[0];
   for(const p of trick.slice(1)){ if(cmp(p.card,win.card,leadSuit)>0) win=p; }
@@ -212,7 +342,6 @@ function resolve(){
   if(players[0].hand.length===0) endHand();
   else { if(current!==0) setTimeout(ai,700); showHand(); }
 }
-
 function endHand(){
   const ns=scoreNS.tricks||0, ew=scoreEW.tricks||0;
   const r = ns>ew ? 'NS win' : (ew>ns ? 'EW win' : 'Tie');
@@ -223,9 +352,7 @@ function endHand(){
   document.getElementById('nxt').onclick=()=>{ overlay.style.display='none'; startGame(mode); };
   document.getElementById('home').onclick=()=>{ overlay.style.display='none'; goHome(); };
 }
-
 function goHome(){ tableEl.classList.add('hidden'); welcomeEl.classList.remove('hidden'); }
-
 function startGame(m){
   mode=m;
   // reset
@@ -237,7 +364,7 @@ function startGame(m){
   welcomeEl.classList.add('hidden');
   tableEl.classList.remove('hidden');
 
-  // difficulty & name (no behavior change)
+  // difficulty & player name (cosmetic)
   try{ difficulty = diffSelect.value || 'normal'; }catch{}
   try{ document.querySelector('#ps b').textContent = (nameInput.value||'You'); }catch{}
 
